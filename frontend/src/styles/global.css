@@ -3,33 +3,33 @@
 :root {
   color-scheme: light;
 
-  /* Neutrals: plain light gray, not cream. Ink is a near-black with a cool cast. */
-  --color-bg: #f2f2f0;
-  --color-surface: #ffffff;
-  --color-text: #18181b;
-  --color-text-muted: #5a5c62;
-  --color-border: #d5d5d2;
-  --color-border-strong: #8f9095;
+  /* Corduroy: a 70s thrift rack. Oatmeal canvas, chocolate ink, one mustard action color. */
+  --color-bg: #ebe7e1;
+  --color-surface: #faf8f5;
+  --color-text: #2a1f19;
+  --color-text-muted: #6b5e54;
+  --color-border: #d3ccc3;
+  --color-border-strong: #8a7e73;
 
-  /* Kraft: the paper of a thrift-store hang tag. Owns the photo frame. */
-  --color-kraft: #e9dcc4;
-  --color-kraft-text-muted: #5e5345;
-  --color-kraft-strong: #8a6d40;
+  /* Photo frame and other inset surfaces, a shade deeper than the canvas. */
+  --color-frame: #d9cfc2;
+  --color-frame-text-muted: #5a4d43;
+  --color-frame-strong: #84672d;
 
-  /* Tag red: the price-sticker red. Reserved for brand, the primary action, focus, and selection. */
-  --color-accent: #c42a1f;
-  --color-accent-hover: #a3211a;
-  --color-accent-soft: #fbe8e4;
-  --color-on-accent: #ffffff;
+  /* Mustard: reserved for the primary action, brand mark, focus, and selection. */
+  --color-accent: #8a6310;
+  --color-accent-hover: #7a570e;
+  --color-accent-soft: #f1e4c4;
+  --color-on-accent: #faf8f5;
 
-  /* Errors sit darker than tag red and always carry an icon, so they never read as brand. */
-  --color-danger: #8c1c14;
-  --color-danger-soft: #f8e6e3;
+  /* Rust for errors: redder than mustard and always paired with an icon. */
+  --color-danger: #8e3a1c;
+  --color-danger-soft: #f5e2d9;
 
-  --color-disabled: #dededb;
-  --color-meter-track: #e0e0dd;
-  --color-meter-fill: #2b2c31;
-  --color-meter-low: var(--color-kraft-strong);
+  --color-disabled: #e3ddd5;
+  --color-meter-track: #d6cec3;
+  --color-meter-fill: #3a2c23;
+  --color-meter-low: var(--color-frame-strong);
 
   --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
@@ -108,7 +108,7 @@ textarea {
 }
 
 ::selection {
-  background: #f6cdc6;
+  background: #ead8a6;
   color: var(--color-text);
 }
 
