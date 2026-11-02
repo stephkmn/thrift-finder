@@ -3,21 +3,33 @@
 :root {
   color-scheme: light;
 
-  --color-bg: #f6f5f2;
+  /* Neutrals: plain light gray, not cream. Ink is a near-black with a cool cast. */
+  --color-bg: #f2f2f0;
   --color-surface: #ffffff;
-  --color-surface-sunken: #efede8;
-  --color-text: #1f1e1c;
-  --color-text-muted: #5c5852;
-  --color-border: #d9d5cd;
-  --color-border-strong: #a9a399;
-  --color-accent: #2f5d50;
-  --color-accent-hover: #244a3f;
-  --color-accent-soft: #e3ece8;
+  --color-text: #18181b;
+  --color-text-muted: #5a5c62;
+  --color-border: #d5d5d2;
+  --color-border-strong: #8f9095;
+
+  /* Kraft: the paper of a thrift-store hang tag. Owns the photo frame. */
+  --color-kraft: #e9dcc4;
+  --color-kraft-text-muted: #5e5345;
+  --color-kraft-strong: #8a6d40;
+
+  /* Tag red: the price-sticker red. Reserved for brand, the primary action, focus, and selection. */
+  --color-accent: #c42a1f;
+  --color-accent-hover: #a3211a;
+  --color-accent-soft: #fbe8e4;
   --color-on-accent: #ffffff;
-  --color-danger: #9f2a1e;
-  --color-danger-soft: #fbeeec;
-  --color-meter-track: #e6e3dc;
-  --color-meter-low: #a9a399;
+
+  /* Errors sit darker than tag red and always carry an icon, so they never read as brand. */
+  --color-danger: #8c1c14;
+  --color-danger-soft: #f8e6e3;
+
+  --color-disabled: #dededb;
+  --color-meter-track: #e0e0dd;
+  --color-meter-fill: #2b2c31;
+  --color-meter-low: var(--color-kraft-strong);
 
   --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
@@ -96,7 +108,7 @@ textarea {
 }
 
 ::selection {
-  background: var(--color-accent-soft);
+  background: #f6cdc6;
   color: var(--color-text);
 }
 

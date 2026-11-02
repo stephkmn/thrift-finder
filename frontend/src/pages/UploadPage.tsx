@@ -101,7 +101,23 @@ export function UploadPage() {
 
       {state.status === 'error' && (
         <div ref={outcomeRef} className={styles.error} role="alert">
-          <p>{state.message}</p>
+          <p className={styles.errorMessage}>
+            <svg
+              className={styles.errorIcon}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 7.5v5.5" />
+              <path d="M12 16.5h.01" />
+            </svg>
+            {state.message}
+          </p>
           <button type="button" className={styles.retry} onClick={() => run(state.input)}>
             Retry
           </button>

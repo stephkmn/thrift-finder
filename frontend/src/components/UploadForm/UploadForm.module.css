@@ -61,7 +61,7 @@
 }
 
 .textarea:disabled {
-  background: var(--color-surface-sunken);
+  background: var(--color-disabled);
   cursor: not-allowed;
 }
 
@@ -89,7 +89,7 @@
 }
 
 .submit:disabled {
-  background: var(--color-border);
+  background: var(--color-disabled);
   color: var(--color-text-muted);
   cursor: not-allowed;
 }

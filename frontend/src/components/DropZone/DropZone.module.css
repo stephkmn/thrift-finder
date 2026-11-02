@@ -13,9 +13,9 @@
   gap: var(--space-1);
   aspect-ratio: 4 / 3;
   padding: var(--space-5);
-  border: 1px solid var(--color-border);
+  border: 1px solid transparent;
   border-radius: var(--radius-md);
-  background: var(--color-surface-sunken);
+  background: var(--color-kraft);
   text-align: center;
   overflow: hidden;
   transition:
@@ -44,8 +44,8 @@
 }
 
 .frame[aria-disabled='true']:hover {
-  border-color: var(--color-border);
-  background: var(--color-surface-sunken);
+  border-color: transparent;
+  background: var(--color-kraft);
 }
 
 .frame[data-filled] {
@@ -66,7 +66,7 @@
   width: 1.75rem;
   height: 1.75rem;
   margin-bottom: var(--space-2);
-  color: var(--color-text-muted);
+  color: var(--color-kraft-text-muted);
 }
 
 .prompt {
@@ -75,7 +75,7 @@
 
 .hint {
   font-size: var(--text-sm);
-  color: var(--color-text-muted);
+  color: var(--color-kraft-text-muted);
 }
 
 .fileBar {
@@ -109,7 +109,7 @@
   padding: var(--space-1) 0;
   border: 0;
   background: none;
-  color: var(--color-accent);
+  color: var(--color-text);
   font-size: var(--text-sm);
   font-weight: 600;
   text-decoration: underline;
@@ -120,7 +120,7 @@
 }
 
 .textButton:hover:not(:disabled) {
-  color: var(--color-accent-hover);
+  color: var(--color-accent);
 }
 
 .textButton:disabled {
