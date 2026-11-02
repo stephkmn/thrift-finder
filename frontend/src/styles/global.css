@@ -3,35 +3,38 @@
 :root {
   color-scheme: light;
 
-  /* Corduroy: a 70s thrift rack. Oatmeal canvas, chocolate ink, one mustard action color. */
-  --color-bg: #ebe7e1;
-  --color-surface: #faf8f5;
-  --color-text: #2a1f19;
-  --color-text-muted: #6b5e54;
-  --color-border: #d3ccc3;
-  --color-border-strong: #8a7e73;
+  /* Pool day: vintage swimwear. White page, sky-aqua photo frame, coral action, navy ink. */
+  --color-bg: #ffffff;
+  --color-surface: #ffffff;
+  --color-text: #0f2240;
+  --color-text-muted: #4a5d78;
+  --color-border: #cdd8e4;
+  --color-border-strong: #7b8aa0;
 
-  /* Photo frame and other inset surfaces, a shade deeper than the canvas. */
-  --color-frame: #d9cfc2;
-  --color-frame-text-muted: #5a4d43;
-  --color-frame-strong: #84672d;
+  /* Photo frame: the one large field of color on the page. */
+  --color-frame: #bfe9ff;
+  --color-frame-text-muted: #2c4566;
+  --color-frame-strong: #e5501f;
 
-  /* Mustard: reserved for the primary action, brand mark, focus, and selection. */
-  --color-accent: #8a6310;
-  --color-accent-hover: #7a570e;
-  --color-accent-soft: #f1e4c4;
-  --color-on-accent: #faf8f5;
+  /* Coral. --color-accent carries white text (4.8:1); --color-accent-bright is for graphics only. */
+  --color-accent: #cc4215;
+  --color-accent-hover: #b03812;
+  --color-accent-bright: #e5501f;
+  --color-accent-soft: #ffe6dc;
+  --color-on-accent: #ffffff;
 
-  /* Rust for errors: redder than mustard and always paired with an icon. */
-  --color-danger: #8e3a1c;
-  --color-danger-soft: #f5e2d9;
+  /* Crimson for errors: cooler than coral and always paired with an icon. */
+  --color-danger: #a3122a;
+  --color-danger-soft: #fde8eb;
 
-  --color-disabled: #e3ddd5;
-  --color-meter-track: #d6cec3;
-  --color-meter-fill: #3a2c23;
-  --color-meter-low: var(--color-frame-strong);
+  --color-disabled: #e6ecf2;
+  --color-meter-track: #dfe7f0;
+  --color-meter-fill: #0f2240;
+  --color-meter-low: var(--color-accent-bright);
 
-  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  /* Young Serif ships one weight; never let the browser fake a bold. */
+  --font-display: 'Young Serif', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Archivo Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 
   --text-xs: 0.8125rem;
@@ -93,6 +96,7 @@ h2,
 h3 {
   line-height: 1.2;
   text-wrap: balance;
+  font-synthesis: none;
 }
 
 img {
@@ -108,7 +112,7 @@ textarea {
 }
 
 ::selection {
-  background: #ead8a6;
+  background: #ffd3c2;
   color: var(--color-text);
 }
 

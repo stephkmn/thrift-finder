@@ -15,14 +15,15 @@
 .mark {
   width: 1.875rem;
   height: 1.875rem;
-  color: var(--color-accent);
+  color: var(--color-accent-bright);
   flex: none;
 }
 
 .title {
-  font-size: 1.25rem;
-  font-weight: 750;
-  letter-spacing: -0.03em;
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  font-weight: 400;
+  letter-spacing: -0.01em;
 }
 
 .main {
