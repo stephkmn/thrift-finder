@@ -1,4 +1,5 @@
 import styles from './App.module.css';
+import { UploadPage } from './pages/UploadPage';
 
 function App() {
   return (
@@ -21,7 +22,9 @@ function App() {
           <h1 className={styles.title}>Thrift Searcher</h1>
         </div>
       </header>
-      <main className={styles.main} />
+      <main className={styles.main}>
+        <UploadPage />
+      </main>
     </>
   );
 }
