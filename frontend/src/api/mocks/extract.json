@@ -1,0 +1,11 @@
+{
+  "attributes": {
+    "category": "jacket",
+    "color": "black",
+    "fabric": "denim",
+    "fit": "regular",
+    "hood": "no hood"
+  },
+  "confidences": { "category": 0.94, "color": 0.88, "fabric": 0.71, "fit": 0.55, "hood": 0.82 },
+  "query_id": "mock-fixture"
+}
