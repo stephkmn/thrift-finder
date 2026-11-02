@@ -20,11 +20,12 @@ describe('extract()', () => {
         color: 'black',
         fabric: 'denim',
         fit: 'regular',
-        hood: 'no hood',
+        others: ['hood'],
       });
       expect(Object.keys(result.confidences).sort()).toEqual(
-        ['category', 'color', 'fabric', 'fit', 'hood'].sort(),
+        ['category', 'color', 'fabric', 'fit', 'others'].sort(),
       );
+      expect(result.confidences.others).toEqual({ hood: 0.82 });
       expect(result.query_id).toMatch(/^mock-/);
     });
 
@@ -52,9 +53,9 @@ describe('extract()', () => {
           color: 'brown',
           fabric: 'wool',
           fit: 'oversized',
-          hood: 'hood',
+          others: null,
         },
-        confidences: { category: 0.9, color: 0.8, fabric: 0.7, fit: 0.6, hood: 0.5 },
+        confidences: { category: 0.9, color: 0.8, fabric: 0.7, fit: 0.6, others: null },
         query_id: 'q-123',
       };
       const fetchSpy = vi

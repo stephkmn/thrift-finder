@@ -129,7 +129,11 @@ flowchart LR
 ```
 
 **API contract (agree in Sprint 1, change only via PR):**
-- `POST /api/extract` — multipart image and/or `text` → `{attributes: {category, color, fabric, fit, hood, ...}, confidences, query_id}`
+- `POST /api/extract` — multipart image and/or `text` → `{attributes: {category, color, fabric, fit, others}, confidences, query_id}`
+  - `others` is a list of extra features (e.g. `["hood", "pockets"]`), or `null` when none are found (never `[]`).
+  - `confidences` has one 0–1 score per scalar attribute; `confidences.others` maps each feature to its own score
+    (e.g. `{"hood": 0.82}`), or is `null` when `others` is `null`.
+  - Typed draft: `frontend/src/api/types.ts`.
 - `POST /api/search` — `{query_id, original_attributes, edited_attributes, text}` → `{results: [{id, title, price, image_url, listing_url, source, match_score}] }` (max 10)
 - `GET /api/item/{id}` — listing details for the details page
 - `GET /api/health`

@@ -91,7 +91,7 @@ describe('UploadPage', () => {
       ['Color', 'black', '88%'],
       ['Fabric', 'denim', '71%'],
       ['Fit', 'regular', '55%'],
-      ['Hood', 'no hood', '82%'],
+      ['Other features', 'hood', '82%'],
     ]) {
       const row = within(card).getByText(label).parentElement!;
       expect(row).toHaveTextContent(value);

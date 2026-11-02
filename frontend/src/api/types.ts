@@ -4,17 +4,34 @@
  * Change only via PR, per the plan.
  */
 
-export type AttributeName = 'category' | 'color' | 'fabric' | 'fit' | 'hood';
+/** Attributes that always hold exactly one value. */
+export type ScalarAttributeName = 'category' | 'color' | 'fabric' | 'fit';
+
+export type AttributeName = ScalarAttributeName | 'others';
 
 export interface Attributes {
   category: string; // e.g. "jacket"
   color: string; // e.g. "black"
   fabric: string; // e.g. "denim"
   fit: string; // e.g. "regular"
-  hood: 'hood' | 'no hood';
+  /**
+   * Any other features found, e.g. ["hood", "pockets"].
+   * `null` when nothing was found — never an empty array.
+   */
+  others: string[] | null;
 }
 
-export type Confidences = Record<AttributeName, number>; // each 0–1
+export interface Confidences {
+  category: number; // each 0–1
+  color: number;
+  fabric: number;
+  fit: number;
+  /**
+   * One 0–1 score per feature in `attributes.others`, keyed by feature name,
+   * e.g. { hood: 0.82, pockets: 0.64 }. `null` exactly when `attributes.others` is null.
+   */
+  others: Record<string, number> | null;
+}
 
 export interface ExtractResponse {
   attributes: Attributes;

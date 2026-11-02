@@ -4,8 +4,14 @@
     "color": "black",
     "fabric": "denim",
     "fit": "regular",
-    "hood": "no hood"
+    "others": ["hood"]
   },
-  "confidences": { "category": 0.94, "color": 0.88, "fabric": 0.71, "fit": 0.55, "hood": 0.82 },
+  "confidences": {
+    "category": 0.94,
+    "color": 0.88,
+    "fabric": 0.71,
+    "fit": 0.55,
+    "others": { "hood": 0.82 }
+  },
   "query_id": "mock-fixture"
 }

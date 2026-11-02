@@ -10,7 +10,8 @@ React + TypeScript + Vite app for Thrift Searcher (CECS 451, Group 7). Owner: Me
 - Client-side photo checks: JPG, PNG, or WebP only, 10 MB max, with a specific hint for iPhone HEIC photos.
 - `extract()` API client for `POST /api/extract`, with a mock mode so the UI works before the backend exists.
 - Loading, error (with Retry), and success states. On success, a read-only card lists the extracted
-  attributes (category, color, fabric, fit, hood) with confidence bars and percentages.
+  attributes (category, color, fabric, fit) with confidence bars and percentages, plus any other
+  features found (`others`, e.g. hood) as chips with their own scores, or "None detected".
 
 **Planned next** (see `docs/PHASE2_SPRINT_PLAN.md`): attribute editor (S2-6), results grid (S2-7), polaroid
 results board (S3-5), details page (S3-6).
