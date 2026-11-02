@@ -1,21 +1,14 @@
-.page {
-  display: grid;
-  gap: var(--space-6);
-}
-
-.intro {
-  display: grid;
-  gap: var(--space-2);
-}
-
 .heading {
-  font-size: var(--text-xl);
-  font-weight: 650;
-  letter-spacing: -0.015em;
+  font-size: clamp(1.75rem, 1.35rem + 1.6vw, 2.375rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
 }
 
 .lede {
   max-width: 34rem;
+  margin-top: var(--space-3);
+  font-size: var(--text-lg);
   color: var(--color-text-muted);
 }
 
@@ -84,7 +77,8 @@
 
 .result {
   display: grid;
-  gap: var(--space-4);
+  gap: var(--space-5);
+  padding-top: var(--space-2);
 }
 
 .startOver {

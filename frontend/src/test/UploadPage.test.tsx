@@ -10,7 +10,7 @@ function setup() {
   render(<UploadPage />);
   return {
     user,
-    submit: () => screen.getByRole('button', { name: 'Analyze item' }),
+    submit: () => screen.getByRole('button', { name: 'Read the details' }),
     fileInput: () => screen.getByLabelText('Photo file'),
     textbox: () => screen.getByRole('textbox', { name: /description/i }),
   };
@@ -97,6 +97,9 @@ describe('UploadPage', () => {
       expect(row).toHaveTextContent(value);
       expect(row).toHaveTextContent(percent);
     }
+    // Only the low-confidence attribute (fit, 55%) is flagged for the user to double-check.
+    expect(within(card).getAllByText('Double-check')).toHaveLength(1);
+    expect(within(card).getByText('Fit').parentElement).toHaveTextContent('Double-check');
     expect(within(card).getByText(/^mock-/)).toBeInTheDocument();
     expect(screen.queryByText('Analyzing your item…')).not.toBeInTheDocument();
 

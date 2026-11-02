@@ -76,17 +76,20 @@ export function UploadPage() {
   const isLoading = state.status === 'loading';
 
   return (
-    <div className={styles.page}>
-      <div className={styles.intro}>
-        <h2 className={styles.heading}>What are you looking for?</h2>
-        <p className={styles.lede}>
-          Show us a jacket, coat, or other outerwear and we&rsquo;ll pick out its category, color,
-          fabric, fit, and hood.
-        </p>
-      </div>
-
-      <UploadForm key={formKey} onSubmit={run} disabled={isLoading} />
-
+    <UploadForm
+      key={formKey}
+      onSubmit={run}
+      disabled={isLoading}
+      intro={
+        <>
+          <h2 className={styles.heading}>Found a jacket you love?</h2>
+          <p className={styles.lede}>
+            Add a photo, a description, or both. We&rsquo;ll read its details so you can find it
+            secondhand.
+          </p>
+        </>
+      }
+    >
       <div className={styles.status} aria-live="polite">
         {isLoading && (
           <p className={styles.loading}>
@@ -113,6 +116,6 @@ export function UploadPage() {
           </button>
         </div>
       )}
-    </div>
+    </UploadForm>
   );
 }

@@ -92,15 +92,19 @@ export function DropZone({ file, onFileChosen, onRemove, disabled, errorId }: Dr
       />
 
       {file ? (
-        <div className={styles.selected} data-dragging={isDragging || undefined} {...dragProps}>
-          <div className={styles.thumb}>
+        <>
+          <div
+            className={styles.frame}
+            data-filled
+            data-dragging={isDragging || undefined}
+            {...dragProps}
+          >
             {previewUrl && <img src={previewUrl} alt="Preview of the selected photo" />}
           </div>
-          <div className={styles.meta}>
+          <div className={styles.fileBar}>
             <p className={styles.fileName} title={file.name}>
-              {file.name}
+              {file.name} <span className={styles.fileSize}>· {formatSize(file.size)}</span>
             </p>
-            <p className={styles.fileSize}>{formatSize(file.size)}</p>
             <div className={styles.actions}>
               <button
                 type="button"
@@ -120,10 +124,10 @@ export function DropZone({ file, onFileChosen, onRemove, disabled, errorId }: Dr
               </button>
             </div>
           </div>
-        </div>
+        </>
       ) : (
         <div
-          className={styles.zone}
+          className={styles.frame}
           role="button"
           tabIndex={disabled ? -1 : 0}
           aria-disabled={disabled || undefined}

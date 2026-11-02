@@ -1,5 +1,5 @@
 import { useId, useState } from 'react';
-import type { FormEvent } from 'react';
+import type { FormEvent, ReactNode } from 'react';
 import type { ExtractInput } from '../../api/client';
 import { validateImage } from '../../lib/validateImage';
 import { DropZone } from '../DropZone/DropZone';
@@ -9,9 +9,13 @@ interface UploadFormProps {
   onSubmit: (input: ExtractInput) => void;
   /** True while a request is in flight. */
   disabled?: boolean;
+  /** Heading content; sits above the details column on wide screens. */
+  intro?: ReactNode;
+  /** Request status and results, rendered below the submit button. */
+  children?: ReactNode;
 }
 
-export function UploadForm({ onSubmit, disabled = false }: UploadFormProps) {
+export function UploadForm({ onSubmit, disabled = false, intro, children }: UploadFormProps) {
   const [image, setImage] = useState<File | null>(null);
   const [text, setText] = useState('');
   const [fileError, setFileError] = useState<string | null>(null);
@@ -35,8 +39,10 @@ export function UploadForm({ onSubmit, disabled = false }: UploadFormProps) {
 
   return (
     <form className={styles.form} onSubmit={handleSubmit} noValidate>
-      <fieldset className={styles.fieldset} disabled={disabled}>
-        <legend className={styles.legend}>Photo</legend>
+      {intro && <div className={styles.intro}>{intro}</div>}
+
+      <fieldset className={styles.photo} disabled={disabled}>
+        <legend className="visually-hidden">Photo</legend>
         <DropZone
           file={image}
           onFileChosen={handleFileChosen}
@@ -54,26 +60,27 @@ export function UploadForm({ onSubmit, disabled = false }: UploadFormProps) {
         )}
       </fieldset>
 
-      <div className={styles.field}>
-        <label htmlFor={textId} className={styles.label}>
-          Description <span className={styles.optional}>(optional)</span>
-        </label>
-        <textarea
-          id={textId}
-          className={styles.textarea}
-          rows={3}
-          value={text}
-          onChange={(event) => setText(event.target.value)}
-          placeholder="Describe it, e.g. 'brown suede jacket with a hood'"
-          disabled={disabled}
-        />
-      </div>
+      <div className={styles.details}>
+        <div className={styles.field}>
+          <label htmlFor={textId} className={styles.label}>
+            Description <span className={styles.optional}>(optional)</span>
+          </label>
+          <textarea
+            id={textId}
+            className={styles.textarea}
+            rows={3}
+            value={text}
+            onChange={(event) => setText(event.target.value)}
+            placeholder="Describe it, e.g. 'brown suede jacket with a hood'"
+            disabled={disabled}
+          />
+        </div>
 
-      <div className={styles.footer}>
         <button type="submit" className={styles.submit} disabled={!canSubmit}>
-          Analyze item
+          Read the details
         </button>
-        <p className={styles.footnote}>Add a photo, a description, or both.</p>
+
+        {children}
       </div>
     </form>
   );

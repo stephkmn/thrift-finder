@@ -13,7 +13,7 @@ const ATTRIBUTES: { name: AttributeName; label: string }[] = [
   { name: 'hood', label: 'Hood' },
 ];
 
-// Below this the model is close to guessing; shown with a quieter bar (the % text still carries it).
+// Below this the model is close to guessing: quieter bar plus a "Double-check" note.
 const LOW_CONFIDENCE = 0.6;
 
 /** Read-only view of extracted attributes. S2-6 builds the attribute editor on top of this. */
@@ -27,16 +27,16 @@ export function AttributeCard({ result }: AttributeCardProps) {
         {ATTRIBUTES.map(({ name, label }) => {
           const confidence = result.confidences[name];
           const percent = Math.round(confidence * 100);
+          const isLow = confidence < LOW_CONFIDENCE;
           return (
             <div key={name} className={styles.row}>
               <dt className={styles.name}>{label}</dt>
-              <dd className={styles.value}>{result.attributes[name]}</dd>
+              <dd className={styles.value}>
+                {result.attributes[name]}
+                {isLow && <span className={styles.check}>Double-check</span>}
+              </dd>
               <dd className={styles.confidence}>
-                <span
-                  className={styles.bar}
-                  data-low={confidence < LOW_CONFIDENCE || undefined}
-                  aria-hidden="true"
-                >
+                <span className={styles.bar} data-low={isLow || undefined} aria-hidden="true">
                   <span style={{ width: `${percent}%` }} />
                 </span>
                 <span className={styles.percent}>

@@ -1,15 +1,7 @@
-.card {
-  padding: var(--space-5);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-card);
-}
-
 .title {
   font-size: var(--text-lg);
   font-weight: 650;
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-3);
 }
 
 .list {
@@ -25,6 +17,10 @@
   border-top: 1px solid var(--color-border);
 }
 
+.row:first-child {
+  border-top-color: var(--color-text);
+}
+
 .row:last-child {
   border-bottom: 1px solid var(--color-border);
 }
@@ -35,8 +31,21 @@
 }
 
 .value {
+  font-size: var(--text-lg);
   font-weight: 600;
   overflow-wrap: anywhere;
+}
+
+.check {
+  display: inline-block;
+  margin-left: var(--space-2);
+  padding: 0 var(--space-2);
+  border-radius: 999px;
+  background: var(--color-surface-sunken);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  vertical-align: 0.15em;
 }
 
 .value::first-letter {
@@ -76,7 +85,7 @@
 }
 
 .queryId {
-  margin-top: var(--space-4);
+  margin-top: var(--space-3);
   font-size: var(--text-xs);
   color: var(--color-text-muted);
 }

@@ -39,7 +39,6 @@
   --radius-sm: 6px;
   --radius-md: 10px;
 
-  --shadow-card: 0 1px 2px rgb(31 30 28 / 0.06), 0 4px 12px rgb(31 30 28 / 0.05);
   --focus-ring: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-accent);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }

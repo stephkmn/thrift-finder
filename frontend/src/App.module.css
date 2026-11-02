@@ -1,32 +1,40 @@
-.header {
-  border-bottom: 1px solid var(--color-border);
-  background: var(--color-surface);
+.header,
+.main {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding-inline: var(--space-4);
 }
 
-.headerInner {
+.header {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  max-width: 40rem;
-  margin: 0 auto;
-  padding: var(--space-3) var(--space-4);
+  padding-block: var(--space-5) 0;
 }
 
 .mark {
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 1.875rem;
+  height: 1.875rem;
   color: var(--color-accent);
   flex: none;
 }
 
 .title {
-  font-size: var(--text-lg);
-  font-weight: 650;
-  letter-spacing: -0.01em;
+  font-size: 1.25rem;
+  font-weight: 750;
+  letter-spacing: -0.03em;
 }
 
 .main {
-  max-width: 40rem;
-  margin: 0 auto;
-  padding: var(--space-6) var(--space-4) var(--space-7);
+  padding-block: var(--space-6) var(--space-7);
+}
+
+@media (min-width: 52rem) {
+  .header {
+    padding-block-start: var(--space-6);
+  }
+
+  .main {
+    padding-block-start: var(--space-7);
+  }
 }
