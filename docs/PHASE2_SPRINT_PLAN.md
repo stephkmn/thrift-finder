@@ -1,6 +1,6 @@
 # Thrift Searcher — Phase 2 Sprint Plan
 
-**Course:** CECS 451 Term Project · **Team:** Group 7 — Achal Mohandas, John Marquez, Quan Pham, Stephanie Noe (Member D)
+**Course:** CECS 451 Term Project · **Team:** Group 7 — Achal Mohandas (Member A), John Marquez (Member B), Quan Pham (Member C), Stephanie Noe (Member D)
 **Phase:** 2 — Prototype Development · **Sprint window:** Fri Oct 23 – Thu Nov 19, 2026 (4 × 1-week sprints)
 **Hard deadline:** Fri Nov 20, 2026 @ 23:59 (Canvas) · **Planned submission:** Thu Nov 19 (Nov 20 = buffer day)
 
