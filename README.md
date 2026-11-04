@@ -72,9 +72,10 @@ thrift-finder/
 │   ├── app/
 │   │   ├── main.py            # FastAPI app factory
 │   │   ├── api/routes.py      # /api/health, /api/extract (stub), /api/search (planned)
+│   │   ├── cache.py           # (planned S2-1) query_id → upload embedding, short TTL
 │   │   ├── schemas.py         # Pydantic contract (mirrors frontend/src/api/types.ts)
 │   │   ├── config.py          # env-var settings
-│   │   ├── ml/                # Member A: CLIP/FashionCLIP, attributes, rerank
+│   │   ├── ml/                # Member A: encoder, attributes, query builder (query.py), rerank
 │   │   └── data/              # Member B: eBay client, local dataset loader
 │   └── tests/
 ├── frontend/                  # React + Vite + TypeScript UI (Member D)
