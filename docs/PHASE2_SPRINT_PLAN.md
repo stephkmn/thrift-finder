@@ -114,17 +114,35 @@ reviews at least one teammate PR per week. The instructor may use GitHub history
 
 ```mermaid
 flowchart LR
-  U[User] -->|photo + optional text| FE[React UI]
-  FE -->|POST /api/extract| API[FastAPI]
-  API --> ENC[CLIP / FashionCLIP encoder]
-  ENC --> ATTR[Zero-shot attribute extractor]
-  ATTR -->|attributes + confidence| FE
-  FE -->|edited attributes| API
-  API -->|POST /api/search| QB[Query builder: attrs -> keywords + query embedding]
-  QB --> RET[Candidate retrieval]
-  RET -->|live| EBAY[(eBay Browse API)]
-  RET -->|fallback / cache| DS[(Local listings + precomputed embeddings)]
-  RET --> RR[Multimodal re-ranker]
+  U[User] -->|photo + optional text| FE[React UI<br/>frontend/src/]
+
+  ENC[CLIP / FashionCLIP encoder<br/>backend/app/ml/encoder.py<br/>image + text towers]
+
+  subgraph EXTRACT["① POST /api/extract — backend/app/api/routes.py"]
+    ATTR[Zero-shot attribute extractor<br/>backend/app/ml/attributes.py]
+    CACHE[(Query cache, short TTL<br/>query_id → E_img upload<br/>backend/app/cache.py)]
+  end
+
+  subgraph SEARCH["② POST /api/search — backend/app/api/routes.py"]
+    QB[Query builder<br/>backend/app/ml/query.py]
+    RET[Candidate retrieval<br/>backend/app/data/]
+    RR[Multimodal re-ranker<br/>backend/app/ml/rerank.py]
+  end
+
+  FE -->|"① image + text"| ENC
+  ENC -->|"E_img, E_txt"| ATTR
+  ENC -->|E_img upload| CACHE
+  ATTR -->|"attributes + confidences + query_id"| FE
+
+  FE -->|"② query_id + original & edited attrs + text"| QB
+  CACHE -->|E_img upload| QB
+  QB <-.->|"E_txt(edited), E_txt(original)"| ENC
+  QB -->|keywords| RET
+  RET -->|live| EBAY[(eBay Browse API<br/>backend/app/data/ebay_client.py)]
+  RET -->|"fallback / cache"| DS[(Local listings + precomputed embeddings<br/>backend/app/data/local_dataset.py)]
+  RET <-.->|embed new live listings| ENC
+  RET -->|candidates + embeddings| RR
+  QB -->|"q_img, q_txt"| RR
   RR -->|top 10 + match scores| FE
 ```
 
