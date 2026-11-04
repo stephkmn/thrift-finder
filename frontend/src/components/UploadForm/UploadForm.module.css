@@ -1,0 +1,120 @@
+.form {
+  display: grid;
+  grid-template-areas:
+    'intro'
+    'photo'
+    'details';
+  gap: var(--space-5);
+}
+
+.intro {
+  grid-area: intro;
+}
+
+.photo {
+  grid-area: photo;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: grid;
+  /* minmax(0, …) so a long file name truncates instead of widening the column. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-2);
+}
+
+.details {
+  grid-area: details;
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: var(--space-5);
+}
+
+.field {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.label {
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.optional {
+  color: var(--color-text-muted);
+}
+
+.textarea {
+  width: 100%;
+  min-height: 5.5rem;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  line-height: 1.45;
+  resize: vertical;
+}
+
+.textarea::placeholder {
+  color: var(--color-text-muted);
+}
+
+.textarea:disabled {
+  background: var(--color-disabled);
+  cursor: not-allowed;
+}
+
+.fieldError {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-danger);
+}
+
+.submit {
+  justify-self: start;
+  min-height: 2.75rem;
+  padding: var(--space-2) var(--space-5);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 160ms var(--ease-out);
+}
+
+.submit:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+}
+
+.submit:disabled {
+  background: var(--color-disabled);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+/* Wide screens: the photo leads on the left and stays in view while results grow. */
+@media (min-width: 52rem) {
+  .form {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      'photo intro'
+      'photo details';
+    column-gap: var(--space-7);
+    row-gap: var(--space-5);
+  }
+
+  .photo {
+    position: sticky;
+    top: var(--space-5);
+    align-self: start;
+  }
+}
+
+@media (max-width: 30rem) {
+  .submit {
+    justify-self: stretch;
+  }
+}

@@ -1,0 +1,41 @@
+.header,
+.main {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding-inline: var(--space-4);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-block: var(--space-5) 0;
+}
+
+.mark {
+  width: 1.875rem;
+  height: 1.875rem;
+  color: var(--color-accent-bright);
+  flex: none;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+.main {
+  padding-block: var(--space-6) var(--space-7);
+}
+
+@media (min-width: 52rem) {
+  .header {
+    padding-block-start: var(--space-6);
+  }
+
+  .main {
+    padding-block-start: var(--space-7);
+  }
+}

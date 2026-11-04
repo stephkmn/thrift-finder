@@ -1,0 +1,108 @@
+.heading {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 1.5rem + 2vw, 2.875rem);
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  line-height: 1.05;
+}
+
+.lede {
+  max-width: 34rem;
+  margin-top: var(--space-3);
+  font-size: var(--text-lg);
+  color: var(--color-text-muted);
+}
+
+/* Always rendered so screen readers pick up the loading announcement. */
+.status:empty {
+  display: none;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-weight: 500;
+}
+
+.spinner {
+  width: 1.125rem;
+  height: 1.125rem;
+  border: 2px solid var(--color-meter-track);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--color-danger) 35%, transparent);
+  border-radius: var(--radius-md);
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+  font-weight: 500;
+}
+
+.errorMessage {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.errorIcon {
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0.125rem;
+}
+
+.retry,
+.startOver {
+  min-height: 2.5rem;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 160ms var(--ease-out),
+    border-color 160ms var(--ease-out);
+}
+
+.retry {
+  border: 1px solid var(--color-danger);
+  background: var(--color-surface);
+  color: var(--color-danger);
+}
+
+.retry:hover {
+  background: var(--color-danger-soft);
+}
+
+.result {
+  display: grid;
+  gap: var(--space-5);
+  padding-top: var(--space-2);
+}
+
+.startOver {
+  justify-self: start;
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.startOver:hover {
+  border-color: var(--color-text-muted);
+  background: var(--color-bg);
+}
