@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import uuid
+from typing import Annotated
 
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile, status
 
@@ -22,8 +23,8 @@ def health() -> dict[str, str]:
 
 @router.post("/api/extract", response_model=ExtractResponse)
 async def extract(
-    image: UploadFile | None = File(default=None),
-    text: str | None = Form(default=None),
+    image: Annotated[UploadFile | None, File()] = None,
+    text: Annotated[str | None, Form()] = None,
 ) -> ExtractResponse:
     """Stub implementation (S1-8). Member A replaces the body with a real model call in S2-1.
 

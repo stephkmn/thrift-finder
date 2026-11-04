@@ -24,7 +24,7 @@ class Attributes(BaseModel):
 
 
 class Confidences(BaseModel):
-    """0–1 confidence per scalar; `others` is a per-feature map or None, matching Attributes.others."""
+    """0-1 confidence per scalar; `others` is a per-feature map or None, matching Attributes."""
 
     model_config = ConfigDict(extra="forbid")
 
