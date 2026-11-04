@@ -1,0 +1,46 @@
+[project]
+name = "thrift-finder-backend"
+version = "0.1.0"
+description = "Thrift Searcher backend — FastAPI service for outerwear attribute extraction and listing search."
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "pydantic>=2.9",
+    "pydantic-settings>=2.6",
+    "python-multipart>=0.0.12",
+]
+
+[project.optional-dependencies]
+# Member A (ML Lead) will append torch, transformers, pillow, numpy here in a follow-up PR.
+ml = []
+# Member B (Data Lead) will append httpx, etc. here.
+data = []
+dev = [
+    "pytest>=8.3",
+    "httpx>=0.28",
+    "ruff>=0.7",
+]
+
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["backend*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = []
+
+[tool.ruff.lint.per-file-ignores]
+"backend/tests/*" = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["backend/tests"]
+addopts = "-q"
