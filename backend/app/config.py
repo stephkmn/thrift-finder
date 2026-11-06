@@ -13,6 +13,7 @@ class Settings(BaseSettings):
 
     data_source: Literal["ebay", "local"] = "local"
     model_name: str = "patrickjohncyh/fashion-clip"
+    model_dtype: Literal["float32", "float64"] = "float32"
     ebay_client_id: str | None = None
     ebay_client_secret: str | None = Field(default=None, repr=False)
 

@@ -47,8 +47,8 @@ flowchart LR
 | React UI | `frontend/src/` | D | Done (S1-9 merged) |
 | FastAPI app | `backend/app/main.py` | C | Done (this PR) |
 | API contract (schemas) | `backend/app/schemas.py` ↔ `frontend/src/api/types.ts` | C + D | Done (this PR) |
-| Encoder (CLIP / FashionCLIP) | `backend/app/ml/encoder.py` | A | Planned (S2-1) |
-| Zero-shot attribute extractor | `backend/app/ml/attributes.py` | A | Planned (S2-1) |
+| Encoder (CLIP / FashionCLIP) | `backend/app/ml/encoder.py` | A | Done (S1-5); wired into `/api/extract` in S2-1 |
+| Zero-shot attribute extractor | `backend/app/ml/attributes.py` + `attributes.yaml` | A | Done (S1-5, S1-6); wired into `/api/extract` in S2-1 |
 | Query builder (edit arithmetic) | `backend/app/ml/query.py` | A + B | Planned (S2-4) |
 | eBay Browse client | `backend/app/data/ebay_client.py` | B | Planned (S1-1, S2-2) |
 | Local dataset loader | `backend/app/data/local_dataset.py` | B | Planned (S1-2, S2-2) |
