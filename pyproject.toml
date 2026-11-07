@@ -9,11 +9,18 @@ dependencies = [
     "pydantic>=2.9",
     "pydantic-settings>=2.6",
     "python-multipart>=0.0.12",
+    # Used by app/ml/ outside the model itself (vocabulary, scoring), so CI can test it without torch.
+    "numpy>=1.26",
+    "pyyaml>=6.0",
 ]
 
 [project.optional-dependencies]
-# Member A (ML Lead) will append torch, transformers, pillow, numpy here in a follow-up PR.
-ml = []
+# Model runtime (Member A). Heavy: torch alone is several hundred MB, so CI skips it.
+ml = [
+    "torch>=2.3",
+    "transformers>=4.44",
+    "pillow>=10.4",
+]
 # Member B (Data Lead) will append httpx, etc. here.
 data = []
 dev = [

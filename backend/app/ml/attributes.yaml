@@ -1,0 +1,179 @@
+# Outerwear attribute vocabulary and prompt templates (S1-6).
+#
+# Scalar attributes (category, color, fabric, fit) are single-choice: every value is scored
+# against the image and the highest softmax probability wins. Each template is filled with a
+# value and the resulting text embeddings are averaged (prompt ensembling).
+#
+# `others` features are independent yes/no checks: the image is compared against a "with"
+# and a "without" prompt, and the feature is reported when P(with) > threshold. A feature may
+# set its own `threshold` to override the shared one (tune noisy features on labeled photos).
+#
+# `synonyms` map words a user might type in the text description to a vocabulary value.
+
+scalars:
+  category:
+    templates:
+      - "a photo of a {value}."
+      - "a product photo of a {value}."
+      - "a photo of a person wearing a {value}."
+    values:
+      - jacket
+      - coat
+      - parka
+      - puffer jacket
+      - trench coat
+      - peacoat
+      - bomber jacket
+      - blazer
+      - vest
+      - windbreaker
+      - raincoat
+      - fleece jacket
+      - varsity jacket
+      - trucker jacket
+      - overcoat
+      - shacket
+    synonyms:
+      puffer: puffer jacket
+      down jacket: puffer jacket
+      trench: trench coat
+      pea coat: peacoat
+      bomber: bomber jacket
+      gilet: vest
+      rain jacket: raincoat
+      anorak: windbreaker
+      letterman: varsity jacket
+      jean jacket: trucker jacket
+      topcoat: overcoat
+      shirt jacket: shacket
+
+  color:
+    templates:
+      - "a photo of a {value} jacket."
+      - "a product photo of {value} outerwear."
+      - "a photo of a {value} coat."
+    values:
+      - black
+      - white
+      - gray
+      - navy
+      - blue
+      - brown
+      - tan
+      - cream
+      - green
+      - olive
+      - red
+      - burgundy
+      - pink
+      - purple
+      - yellow
+      - orange
+      - multicolor
+    synonyms:
+      grey: gray
+      charcoal: gray
+      beige: tan
+      camel: tan
+      khaki: tan
+      ivory: cream
+      maroon: burgundy
+      wine: burgundy
+      multicolored: multicolor
+      colorful: multicolor
+
+  fabric:
+    templates:
+      - "a photo of a {value} jacket."
+      - "a close-up photo of {value} fabric outerwear."
+      - "a product photo of a coat made of {value}."
+    values:
+      - denim
+      - leather
+      - suede
+      - wool
+      - cotton
+      - nylon
+      - polyester
+      - fleece
+      - corduroy
+      - tweed
+      - canvas
+      - knit
+      - satin
+      - velvet
+    synonyms:
+      jean: denim
+      faux leather: leather
+      sherpa: fleece
+
+  fit:
+    templates:
+      - "a photo of a {value} jacket."
+      - "a photo of a person wearing a {value} coat."
+    values:
+      - slim fit
+      - regular fit
+      - oversized
+      - cropped
+      - longline
+    synonyms:
+      slim: slim fit
+      fitted: slim fit
+      regular: regular fit
+      relaxed: oversized
+      baggy: oversized
+
+others:
+  threshold: 0.5
+  with_template: "a photo of a jacket with {phrase}."
+  without_template: "a photo of a jacket without {phrase}."
+  features:
+    hood:
+      phrase: a hood
+      synonyms: [hooded, hoodie]
+    fur trim:
+      phrase: a fur-trimmed collar
+      synonyms: [fur, faux fur, shearling]
+    zipper:
+      phrase: a front zipper
+      synonyms: [zip, zip-up, zippered]
+    buttons:
+      phrase: buttons down the front
+      synonyms: [button, button-up, buttoned]
+    belt:
+      phrase: a belt at the waist
+      synonyms: [belted]
+    quilted:
+      phrase: quilted padding
+      synonyms: [quilting, padded]
+    double-breasted:
+      phrase: a double-breasted front
+      synonyms: [double breasted]
+    patches:
+      phrase: sewn-on patches
+      synonyms: [patch, patched]
+    plaid:
+      phrase: a plaid pattern
+      synonyms: [tartan, checkered, flannel]
+    camo:
+      phrase: a camouflage print
+      synonyms: [camouflage]
+    striped:
+      phrase: stripes
+      synonyms: [stripes, stripe]
+    color-block:
+      phrase: color-blocked panels in contrasting colors
+      synonyms: [colorblock, color block, color blocked]
+    graphic print:
+      phrase: a large graphic print or logo
+      synonyms: [graphic, logo]
+    embroidery:
+      phrase: embroidery
+      synonyms: [embroidered]
+    distressed:
+      phrase: a distressed, faded look
+      synonyms: [ripped, faded]
+    cargo pockets:
+      phrase: large cargo pockets
+      synonyms: [cargo, utility pockets]
