@@ -15,7 +15,7 @@ dependencies = [
 # Member A (ML Lead) will append torch, transformers, pillow, numpy here in a follow-up PR.
 ml = []
 # Member B (Data Lead) will append httpx, etc. here.
-data = []
+data = ["datasets>=3.2", "Pillow>=10.0"]
 dev = [
     "pytest>=8.3",
     "httpx>=0.28",
