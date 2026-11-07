@@ -35,10 +35,11 @@ ENV/
 .coverage.*
 htmlcov/
 
-# Data artifacts (keep tiny samples via explicit un-ignore in data/)
-data/
-!data/README.md
-!data/samples/
+# Ignore downloaded datasets in the repository root
+# Keep backend/app/data/ Python source files tracked
+/data/*
+!/data/README.md
+!/data/samples/
 
 # ML model caches
 *.npy

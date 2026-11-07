@@ -22,7 +22,7 @@ ml = [
     "pillow>=10.4",
 ]
 # Member B (Data Lead) will append httpx, etc. here.
-data = []
+data = ["datasets>=3.2", "Pillow>=10.0"]
 dev = [
     "pytest>=8.3",
     "httpx>=0.28",
