@@ -29,7 +29,7 @@ SCALAR_NAMES = ("category", "color", "fabric", "fit")
 
 # Confidence reported for anything the user stated in their own description.
 STATED_CONFIDENCE = 1.0
-NEGATIONS = ("no", "without", "not", "non")
+NEGATIONS = ("no", "not", "non", "without", "never", "don't", "dont")
 
 
 @dataclass(frozen=True)
@@ -85,13 +85,15 @@ def _softmax(logits: np.ndarray) -> np.ndarray:
 
 
 def _phrase_pattern(phrase: str) -> re.Pattern[str]:
-    return re.compile(rf"\b{re.escape(phrase)}\b", re.IGNORECASE)
+    """Whole-word match that also accepts a plural ("hoods", "patches")."""
+    return re.compile(rf"\b{re.escape(phrase)}(?:e?s)?\b", re.IGNORECASE)
 
 
 def _is_negated(text: str, start: int) -> bool:
-    """True when one of NEGATIONS sits within the two words before `start`."""
-    preceding = re.findall(r"[a-z]+", text[:start].lower())[-2:]
-    return any(word in NEGATIONS for word in preceding)
+    """True when a NEGATIONS word, or "instead of", sits within the two words before `start`."""
+    # Phone keyboards type a curly apostrophe in "don't".
+    preceding = re.findall(r"[a-z']+", text[:start].lower().replace("\u2019", "'"))[-2:]
+    return preceding == ["instead", "of"] or any(word in NEGATIONS for word in preceding)
 
 
 class AttributeExtractor:
@@ -130,6 +132,11 @@ class AttributeExtractor:
             else self.encoder.encode_texts([text])[0]
         )
         attributes, confidences, others = self._zero_shot(query)
+        if image is None:
+            # Without a photo, "with X" vs. "without X" compares two sentences, and any
+            # description that says "with" leans towards every feature. Report only the
+            # features the text actually names.
+            others.clear()
         if text:
             self._apply_text(text, attributes, confidences, others)
         return Extraction(

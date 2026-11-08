@@ -60,9 +60,15 @@ class ClipEncoder:
         return float(self._model.logit_scale.detach().exp())
 
     def encode_images(self, images: Sequence[Image.Image], batch_size: int = 16) -> np.ndarray:
+        from PIL import ImageOps
+
         chunks = []
         for start in range(0, len(images), batch_size):
-            batch = [image.convert("RGB") for image in images[start : start + batch_size]]
+            # Phone photos are often stored sideways with an EXIF rotation tag; apply it first.
+            batch = [
+                ImageOps.exif_transpose(image).convert("RGB")
+                for image in images[start : start + batch_size]
+            ]
             pixels = self._processor(images=batch, return_tensors="pt")["pixel_values"]
             with self._torch.no_grad():
                 # Call the sub-modules directly: get_image_features changed its return

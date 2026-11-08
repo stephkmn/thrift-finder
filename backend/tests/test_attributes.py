@@ -33,6 +33,7 @@ class FakeEncoder:
 
     logit_scale = 100.0
     dim = 1024
+    stopwords = frozenset({"a", "an", "of", "the", "photo", "product", "with"})
 
     def __init__(self) -> None:
         self._index: dict[str, int] = {}
@@ -48,7 +49,7 @@ class FakeEncoder:
         for word in re.findall(r"[a-z]+", text.lower()):
             if word == "without":
                 sign = -1.0
-            elif word not in {"a", "an", "of", "the", "photo", "product", "with"}:
+            elif word not in self.stopwords:
                 vector += sign * self._word(word)
         return vector / max(np.linalg.norm(vector), 1e-12)
 
@@ -145,6 +146,35 @@ def test_negated_value_is_not_applied(extractor):
     attributes, *_ = extractor.extract(image=FakeImage("black wool coat"), text="not black")
     assert attributes.color == "black"
     assert attributes.fabric == "wool"
+
+
+def test_dont_and_instead_of_negate_a_value(extractor):
+    image = FakeImage("black denim jacket with a hood")
+    for text in ["I don't want black, brown instead", "I don\u2019t want black, brown instead"]:
+        assert extractor.extract(image=image, text=text).attributes.color == "brown"
+    assert extractor.extract(image=image, text="brown instead of black").attributes.color == "brown"
+
+
+def test_plural_feature_is_matched_and_negated(extractor):
+    image = FakeImage("black denim jacket with a hood")
+    assert extractor.extract(image=image, text="no hoods please").attributes.others is None
+    assert extractor.extract(text="a coat with zippers").attributes.others == ["zipper"]
+
+
+class WithLeaningEncoder(FakeEncoder):
+    """Counts the word "with", like CLIP does: any description saying "with" then sits
+    closer to every "a jacket with X" prompt than to its "without X" partner."""
+
+    stopwords = FakeEncoder.stopwords - {"with"}
+
+
+def test_text_only_reports_only_the_features_it_names():
+    extractor = AttributeExtractor(WithLeaningEncoder())
+    image_result = extractor.extract(image=FakeImage("black jacket with a hood"))
+    assert len(image_result.attributes.others or []) > 1  # the bias this guards against
+    text_result = extractor.extract(text="brown suede bomber jacket with a hood")
+    assert text_result.attributes.others == ["hood"]
+    assert text_result.confidences.others == {"hood": 1.0}
 
 
 def test_text_only_extraction_returns_valid_contract(extractor):
