@@ -47,13 +47,13 @@ flowchart LR
 | React UI | `frontend/src/` | D | Done (S1-9 merged) |
 | FastAPI app | `backend/app/main.py` | C | Done (this PR) |
 | API contract (schemas) | `backend/app/schemas.py` ↔ `frontend/src/api/types.ts` | C + D | Done (this PR) |
-| Encoder (CLIP / FashionCLIP) | `backend/app/ml/encoder.py` | A | Done (S1-5); wired into `/api/extract` in S2-1 |
-| Zero-shot attribute extractor | `backend/app/ml/attributes.py` + `attributes.yaml` | A | Done (S1-5, S1-6); wired into `/api/extract` in S2-1 |
+| Encoder (CLIP / FashionCLIP) | `backend/app/ml/encoder.py` | A | Done (S1-5); wired into `/api/extract` (S2-1) |
+| Zero-shot attribute extractor | `backend/app/ml/attributes.py` + `attributes.yaml` | A | Done (S1-5, S1-6); wired into `/api/extract` (S2-1) |
 | Query builder (edit arithmetic) | `backend/app/ml/query.py` | A + B | Planned (S2-4) |
 | eBay Browse client | `backend/app/data/ebay_client.py` | B | Planned (S1-1, S2-2) |
 | Local dataset loader | `backend/app/data/local_dataset.py` | B | Planned (S1-2, S2-2) |
 | Re-ranker | `backend/app/ml/rerank.py` | A | Planned (S2-5) |
-| Embedding cache | `backend/app/cache.py` | C | Planned (S2-1) |
+| Embedding cache | `backend/app/cache.py` | C | Done (S2-1): in-memory, TTL + size cap, records `image`/`text` embedding kind |
 
 ## Request flow
 
