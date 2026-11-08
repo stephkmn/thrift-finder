@@ -57,7 +57,7 @@ async def extract(
             category="jacket",
             color="black",
             fabric="denim",
-            fit="regular",
+            fit="regular fit",
             others=["hood"],
         ),
         confidences=Confidences(
