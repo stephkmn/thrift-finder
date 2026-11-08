@@ -1,6 +1,6 @@
 import { ApiError } from './errors';
-import { mockExtract } from './mocks/mockApi';
-import type { ExtractResponse } from './types';
+import { mockExtract, mockSearch } from './mocks/mockApi';
+import type { ExtractResponse, SearchRequest, SearchResponse } from './types';
 
 export { ApiError } from './errors';
 
@@ -14,12 +14,38 @@ function mocksEnabled(): boolean {
   return import.meta.env.VITE_USE_MOCKS === 'true';
 }
 
-function messageForStatus(status: number): string {
+const RATE_LIMITED = 'Too many requests right now. Wait a moment and try again.';
+
+function extractMessageForStatus(status: number): string {
   if (status === 413) return 'That photo is too large for the server. Try a smaller image.';
   if (status === 415 || status === 422)
     return "The server couldn't read that photo. Try a JPG or PNG.";
-  if (status === 429) return 'Too many requests right now. Wait a moment and try again.';
+  if (status === 429) return RATE_LIMITED;
   return 'Something went wrong while analyzing your item. Please try again.';
+}
+
+function searchMessageForStatus(status: number): string {
+  if (status === 429) return RATE_LIMITED;
+  return 'Something went wrong while finding matches. Please try again.';
+}
+
+/** fetch() that turns network failures and non-2xx responses into user-safe ApiErrors. */
+async function request<T>(
+  url: string,
+  init: RequestInit,
+  messageForStatus: (status: number) => string,
+): Promise<T> {
+  let response: Response;
+  try {
+    response = await fetch(url, init);
+  } catch {
+    throw new ApiError(0, "We couldn't reach the server. Check that the backend is running.");
+  }
+
+  if (!response.ok) {
+    throw new ApiError(response.status, messageForStatus(response.status));
+  }
+  return (await response.json()) as T;
 }
 
 /** POST /api/extract — photo and/or text in, attributes with confidences out. */
@@ -38,15 +64,26 @@ export async function extract(input: ExtractInput): Promise<ExtractResponse> {
   if (image) body.append('image', image);
   if (text) body.append('text', text);
 
-  let response: Response;
-  try {
-    response = await fetch('/api/extract', { method: 'POST', body });
-  } catch {
-    throw new ApiError(0, "We couldn't reach the server. Check that the backend is running.");
+  return request<ExtractResponse>(
+    '/api/extract',
+    { method: 'POST', body },
+    extractMessageForStatus,
+  );
+}
+
+/** POST /api/search — original and edited attributes in, up to 10 ranked listings out. */
+export async function search(searchRequest: SearchRequest): Promise<SearchResponse> {
+  if (mocksEnabled()) {
+    return mockSearch(searchRequest);
   }
 
-  if (!response.ok) {
-    throw new ApiError(response.status, messageForStatus(response.status));
-  }
-  return (await response.json()) as ExtractResponse;
+  return request<SearchResponse>(
+    '/api/search',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(searchRequest),
+    },
+    searchMessageForStatus,
+  );
 }

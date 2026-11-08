@@ -90,7 +90,7 @@ describe('UploadPage', () => {
       ['Category', 'jacket', '94%'],
       ['Color', 'black', '88%'],
       ['Fabric', 'denim', '71%'],
-      ['Fit', 'regular', '55%'],
+      ['Fit', 'regular fit', '55%'],
       ['Other features', 'hood', '82%'],
     ]) {
       const row = within(card).getByText(label).parentElement!;
