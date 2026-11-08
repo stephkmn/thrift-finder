@@ -13,7 +13,7 @@ export interface Attributes {
   category: string; // e.g. "jacket"
   color: string; // e.g. "black"
   fabric: string; // e.g. "denim"
-  fit: string; // e.g. "regular"
+  fit: string; // e.g. "regular fit"
   /**
    * Any other features found, e.g. ["hood", "pockets"].
    * `null` when nothing was found — never an empty array.
@@ -39,7 +39,7 @@ export interface ExtractResponse {
   query_id: string;
 }
 
-// Defined now so Sprint 2 is ready; not used by the skeleton UI yet.
+// POST /api/search (S2-5). The UI uses a mock until the backend endpoint lands.
 export interface SearchRequest {
   query_id: string;
   original_attributes: Attributes;
@@ -50,9 +50,9 @@ export interface SearchRequest {
 export interface SearchResult {
   id: string;
   title: string;
-  price: number; // DRAFT: assumed USD number — confirm with C
+  price: number | null; // USD; null = no verified price (local archive items)
   image_url: string;
-  listing_url: string;
+  listing_url: string | null; // null for local archive items: they are not for sale
   source: 'ebay' | 'local';
   match_score: number; // 0–100 rescaled, per plan §4.3
 }

@@ -80,9 +80,11 @@ class SearchResult(BaseModel):
 
     id: str
     title: str
-    price: float
+    # Required keys with nullable values: local archive items have no verified price or
+    # purchase link (docs/DATA.md), so both are None for them. Mirrors types.ts.
+    price: float | None
     image_url: str
-    listing_url: str
+    listing_url: str | None
     source: Literal["ebay", "local"]
     match_score: float = Field(ge=0.0, le=100.0)
 

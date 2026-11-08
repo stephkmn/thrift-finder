@@ -153,6 +153,8 @@ flowchart LR
     (e.g. `{"hood": 0.82}`), or is `null` when `others` is `null`.
   - Typed draft: `frontend/src/api/types.ts`.
 - `POST /api/search` — `{query_id, original_attributes, edited_attributes, text}` → `{results: [{id, title, price, image_url, listing_url, source, match_score}] }` (max 10)
+  - `price` and `listing_url` are always present but `null` for local archive items (`source: "local"`): they have
+    no verified price or purchase link (see `docs/DATA.md`). `image_url` is always present.
 - `GET /api/item/{id}` — listing details for the details page
 - `GET /api/health`
 
