@@ -66,3 +66,28 @@ python scripts/zero_shot_accuracy.py <labels.csv> --out results.md
 ```
 
 Labels CSV format: see the docstring at the top of `scripts/zero_shot_accuracy.py`.
+
+## S2-3 / S2-4 / S2-5: edit-aware search (preliminary)
+
+**Date:** Nov 8, 2026 · **Owner:** Member A · **Code:** `backend/app/ml/index.py`, `query.py`, `rerank.py`
+
+Search over the 500-listing local index (`scripts/ingest.py` → `scripts/build_embeddings.py`),
+FashionCLIP, float64 on a laptop CPU. Each query is an Openverse photo from the S1-5 set (none are
+in the index) with one color edit, e.g. `puffer_02` blue → red.
+
+| Metric | Without edit arithmetic (λ = 0) | With edit arithmetic (λ = 1) |
+|---|---|---|
+| Edit-satisfaction (share of the top 10 in the new color) | 61% | **80%** |
+
+- 8 color edits; a result counts when the listing's dataset color label (mapped to our vocabulary,
+  e.g. Grey → gray) includes the new color. λ = 0 still uses the edited caption in the text terms.
+- λ = 2 reached 85% with an earlier calibration but moved the results further from the upload's
+  look, so λ stays at the plan's 1.0 until S3-1 tuning.
+- **Latency:** one search takes ~60 ms once the model and index are loaded. Building the index takes
+  ~50 s for 500 listings and runs once.
+- **Match score:** each similarity term is rescaled from 0 (typical unrelated listing) to 1 (closest
+  match measured) before weighting, because image-to-image and text-to-image cosines sit on very
+  different ranges. Anchors are in `CALIBRATION` in `rerank.py` and must be re-measured if the model
+  or data changes.
+- Small sample (8 edits, color only). Feature edits (e.g. removing a hood) can't be scored yet: the
+  dataset has no feature labels.
