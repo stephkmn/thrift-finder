@@ -1,5 +1,6 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import type { DragEvent, KeyboardEvent } from 'react';
+import { useObjectUrl } from '../../lib/useObjectUrl';
 import { ACCEPTED_IMAGE_TYPES } from '../../lib/validateImage';
 import styles from './DropZone.module.css';
 
@@ -22,20 +23,8 @@ export function DropZone({ file, onFileChosen, onRemove, disabled, errorId }: Dr
   const inputRef = useRef<HTMLInputElement>(null);
   const hintId = useId();
   const [isDragging, setIsDragging] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-
-  // The preview URL is the only reference to the image outside React state; revoke it
-  // on replace, remove, and unmount so the photo never outlives the page in memory.
-  useEffect(() => {
-    if (!file) return;
-    const url = URL.createObjectURL(file);
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing with an external resource
-    setPreviewUrl(url);
-    return () => {
-      URL.revokeObjectURL(url);
-      setPreviewUrl(null);
-    };
-  }, [file]);
+  // Revoked on replace, remove, and unmount.
+  const previewUrl = useObjectUrl(file);
 
   const openPicker = () => {
     if (!disabled) inputRef.current?.click();

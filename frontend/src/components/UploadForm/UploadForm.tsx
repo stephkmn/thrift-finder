@@ -13,11 +13,19 @@ interface UploadFormProps {
   intro?: ReactNode;
   /** Request status and results, rendered below the submit button. */
   children?: ReactNode;
+  /** Pre-fills the form, e.g. when the user goes back to edit their upload. */
+  initialInput?: ExtractInput;
 }
 
-export function UploadForm({ onSubmit, disabled = false, intro, children }: UploadFormProps) {
-  const [image, setImage] = useState<File | null>(null);
-  const [text, setText] = useState('');
+export function UploadForm({
+  onSubmit,
+  disabled = false,
+  intro,
+  children,
+  initialInput,
+}: UploadFormProps) {
+  const [image, setImage] = useState<File | null>(initialInput?.image ?? null);
+  const [text, setText] = useState(initialInput?.text ?? '');
   const [fileError, setFileError] = useState<string | null>(null);
   const textId = useId();
   const fileErrorId = useId();
