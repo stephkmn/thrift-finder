@@ -10,12 +10,22 @@ const VOCABULARY_FILE = fileURLToPath(
   new URL('../backend/app/ml/attributes.yaml', import.meta.url),
 );
 
-/** Turns `*.yaml` imports into JSON modules. Runs for dev, build, and Vitest alike. */
+const YAML_FILE = /\.ya?ml$/i;
+// Imports that ask Vite for something other than the parsed module (?raw text, ?url, ...).
+const LEAVE_TO_VITE = /(?:^|&)(?:raw|url|inline|worker|sharedworker)(?:[=&]|$)/;
+
+/**
+ * Turns `*.yaml` / `*.yml` imports into JSON modules. Runs for dev, build, and Vitest alike.
+ * Ids can carry a query (e.g. a dev-server `?v=` hash), so match on the path part only.
+ */
 function yamlAsJson(): Plugin {
   return {
     name: 'yaml-as-json',
     transform(code, id) {
-      if (!id.endsWith('.yaml')) return null;
+      const queryStart = id.indexOf('?');
+      const path = queryStart === -1 ? id : id.slice(0, queryStart);
+      const query = queryStart === -1 ? '' : id.slice(queryStart + 1);
+      if (!YAML_FILE.test(path) || LEAVE_TO_VITE.test(query)) return null;
       return { code: `export default ${JSON.stringify(parse(code))};`, map: null };
     },
   };

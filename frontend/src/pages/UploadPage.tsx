@@ -108,6 +108,11 @@ function reducer(state: PageState, action: Action): PageState {
 }
 
 /** The description goes along unchanged; omitted when the user gave none. */
+/** Same photo (the very File the form was pre-filled with) and the same description. */
+function sameInput(a: ExtractInput, b: ExtractInput): boolean {
+  return a.image === b.image && (a.text ?? '') === (b.text ?? '');
+}
+
 function buildSearchRequest(session: Session, edited: Attributes): SearchRequest {
   const request: SearchRequest = {
     query_id: session.extracted.query_id,
@@ -138,7 +143,17 @@ export function UploadPage() {
     }
   };
 
+  const cancelEditUpload = () => {
+    extractRequestId.current++;
+    dispatch({ type: 'cancelEditUpload' });
+  };
+
   const runExtract = async (input: ExtractInput) => {
+    // Resubmitting an unchanged upload would only wipe the user's edits: keep the session.
+    if (state.editingUpload && state.session && sameInput(input, state.session.input)) {
+      cancelEditUpload();
+      return;
+    }
     const id = ++extractRequestId.current;
     dispatch({ type: 'extractStart', input });
     let result: ExtractResponse;
@@ -159,11 +174,6 @@ export function UploadPage() {
     extractRequestId.current++;
     searchRequestId.current++;
     dispatch({ type: 'reset' });
-  };
-
-  const cancelEditUpload = () => {
-    extractRequestId.current++;
-    dispatch({ type: 'cancelEditUpload' });
   };
 
   const { session, edited, editingUpload } = state;
@@ -287,9 +297,13 @@ export function UploadPage() {
           >
             Update results
           </button>
-          {!searching && hasChanges && state.lastSearched !== null && (
-            <p className={styles.pending}>Your results don&rsquo;t include these edits yet.</p>
-          )}
+          {/* After a failed search there are no results on screen for this note to describe. */}
+          {!searching &&
+            searchState.status !== 'error' &&
+            hasChanges &&
+            state.lastSearched !== null && (
+              <p className={styles.pending}>Your results don&rsquo;t include these edits yet.</p>
+            )}
         </AttributeEditor>
 
         <ResultsGrid

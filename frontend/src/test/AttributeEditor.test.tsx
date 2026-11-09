@@ -162,3 +162,65 @@ describe('AttributeEditor', () => {
     expect(chip()).not.toHaveTextContent('Double-check');
   });
 });
+
+describe('AttributeEditor — keyboard focus', () => {
+  const picker = () => screen.getByRole('combobox', { name: 'Add feature' });
+
+  it('moves focus to the Add-feature select after removing a chip', async () => {
+    const { user } = setup();
+    await user.click(screen.getByRole('button', { name: 'Remove hood' }));
+    expect(picker()).toHaveFocus();
+  });
+
+  it('still lands on the Add-feature select when every feature was selected', async () => {
+    const { user } = setup({
+      ...extracted,
+      attributes: { ...extracted.attributes, others: [...VOCABULARY.features] },
+      confidences: {
+        ...extracted.confidences,
+        others: Object.fromEntries(VOCABULARY.features.map((f) => [f, 0.9])),
+      },
+    });
+    expect(screen.queryByRole('combobox', { name: 'Add feature' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Remove hood' }));
+    expect(picker()).toHaveFocus();
+    expect(document.body).not.toHaveFocus();
+  });
+
+  it('falls back to the first chip when the select cannot appear', async () => {
+    const { user } = setup({
+      ...extracted,
+      attributes: { ...extracted.attributes, others: [...VOCABULARY.features, 'pockets'] },
+      confidences: {
+        ...extracted.confidences,
+        others: Object.fromEntries([...VOCABULARY.features, 'pockets'].map((f) => [f, 0.9])),
+      },
+    });
+    await user.click(screen.getByRole('button', { name: 'Remove pockets' }));
+    expect(screen.getByRole('button', { name: `Remove ${VOCABULARY.features[0]}` })).toHaveFocus();
+  });
+
+  it('moves focus to the attribute control after its Reset button disappears', async () => {
+    const { user } = setup();
+
+    await user.selectOptions(screen.getByRole('combobox', { name: /fabric/i }), 'suede');
+    await user.click(screen.getByRole('button', { name: 'Reset fabric' }));
+    expect(screen.getByRole('combobox', { name: /fabric/i })).toHaveFocus();
+
+    await user.click(screen.getByRole('radio', { name: 'brown' }));
+    await user.click(screen.getByRole('button', { name: 'Reset color' }));
+    expect(screen.getByRole('radio', { name: 'black' })).toHaveFocus();
+
+    await user.click(screen.getByRole('button', { name: 'Remove hood' }));
+    await user.click(screen.getByRole('button', { name: 'Reset other features' }));
+    expect(picker()).toHaveFocus();
+  });
+
+  it('moves focus to the editor heading after Reset all', async () => {
+    const { user } = setup();
+    await user.click(screen.getByRole('radio', { name: 'brown' }));
+    await user.click(screen.getByRole('button', { name: 'Reset all' }));
+    expect(screen.getByRole('heading', { name: 'What we found' })).toHaveFocus();
+  });
+});

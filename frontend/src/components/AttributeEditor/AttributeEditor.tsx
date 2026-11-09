@@ -1,4 +1,4 @@
-import { useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { Attributes, ExtractResponse, ScalarAttributeName } from '../../api/types';
 import {
@@ -51,6 +51,8 @@ interface RowProps {
   label: string;
   /** Reset button target, e.g. "color" gives "Reset color". */
   name: string;
+  /** Which attribute this row edits; lets the editor find the row's control to focus. */
+  attribute: keyof Attributes;
   /** Set when the user changed this attribute: what the model said. */
   was: string | null;
   needsCheck: boolean;
@@ -61,7 +63,17 @@ interface RowProps {
   children: ReactNode;
 }
 
-function Row({ label, name, was, needsCheck, onReset, group, controlId, children }: RowProps) {
+function Row({
+  label,
+  name,
+  attribute,
+  was,
+  needsCheck,
+  onReset,
+  group,
+  controlId,
+  children,
+}: RowProps) {
   const heading = (
     <span className={styles.name}>
       {label}
@@ -79,7 +91,11 @@ function Row({ label, name, was, needsCheck, onReset, group, controlId, children
 
   if (group) {
     return (
-      <fieldset className={styles.row} data-edited={was !== null || undefined}>
+      <fieldset
+        className={styles.row}
+        data-edited={was !== null || undefined}
+        data-attribute={attribute}
+      >
         <legend className={styles.legend}>{heading}</legend>
         {meta}
         <div className={styles.control}>{children}</div>
@@ -87,7 +103,7 @@ function Row({ label, name, was, needsCheck, onReset, group, controlId, children
     );
   }
   return (
-    <div className={styles.row} data-edited={was !== null || undefined}>
+    <div className={styles.row} data-edited={was !== null || undefined} data-attribute={attribute}>
       <label htmlFor={controlId} className={styles.legend}>
         {heading}
       </label>
@@ -144,13 +160,24 @@ function FeatureChips({
   const selectId = useId();
   const [pending, setPending] = useState('');
   const selectRef = useRef<HTMLSelectElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
+  const focusPickerAfterRender = useRef(false);
   const features = value ?? [];
   const available = VOCABULARY.features.filter((feature) => !features.includes(feature));
 
+  // The removed chip took its focused button with it. Focus moves to the Add-feature select once
+  // the re-render has shown it (it is hidden while every feature is selected). If it still can't
+  // exist (only non-vocabulary features were removed), fall back to the first remaining chip.
+  useEffect(() => {
+    if (!focusPickerAfterRender.current) return;
+    focusPickerAfterRender.current = false;
+    const target = selectRef.current ?? listRef.current?.querySelector('button');
+    target?.focus();
+  });
+
   const remove = (feature: string) => {
+    focusPickerAfterRender.current = true;
     onChange(normalizeFeatures(features.filter((f) => f !== feature)));
-    // The chip (and its focused button) is gone; keep focus in the same row.
-    selectRef.current?.focus();
   };
 
   const add = () => {
@@ -162,7 +189,7 @@ function FeatureChips({
   return (
     <>
       {features.length > 0 ? (
-        <ul className={styles.chips}>
+        <ul ref={listRef} className={styles.chips}>
           {features.map((feature) => {
             const isLow = lowConfidence.has(feature);
             return (
@@ -220,18 +247,49 @@ export function AttributeEditor({ extracted, value, onChange, children }: Attrib
   const confidences = extracted.confidences;
   const ids = useId();
   const isEdited = !sameAttributes(value, original);
+  const editorRef = useRef<HTMLElement>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  /** What to focus after the next render: an attribute's row, or the heading. */
+  const focusAfterRender = useRef<keyof Attributes | 'heading' | null>(null);
+
+  // A per-attribute Reset button disappears once clicked, and Reset all becomes disabled, so
+  // focus would drop to <body>. Move it to that attribute's control, or to the editor heading.
+  useEffect(() => {
+    const target = focusAfterRender.current;
+    if (target === null) return;
+    focusAfterRender.current = null;
+    if (target === 'heading') {
+      headingRef.current?.focus();
+      return;
+    }
+    const row = editorRef.current?.querySelector(`[data-attribute="${target}"]`);
+    const control =
+      target === 'color'
+        ? row?.querySelector<HTMLElement>('input[type="radio"]:checked')
+        : target === 'others'
+          ? (row?.querySelector<HTMLElement>('select') ??
+            row?.querySelector<HTMLElement>('ul button'))
+          : row?.querySelector<HTMLElement>('select');
+    control?.focus();
+  });
 
   const set = <K extends keyof Attributes>(name: K, next: Attributes[K]) =>
     onChange({ ...value, [name]: next });
+
+  const reset = <K extends keyof Attributes>(name: K) => {
+    focusAfterRender.current = name;
+    set(name, original[name]);
+  };
 
   const scalarRow = (name: ScalarAttributeName) => {
     const changed = value[name] !== original[name];
     const common = {
       label: LABELS[name],
       name,
+      attribute: name,
       was: changed ? original[name] : null,
       needsCheck: !changed && confidences[name] < LOW_CONFIDENCE,
-      onReset: () => set(name, original[name]),
+      onReset: () => reset(name),
     };
     const options = optionsFor(name, value[name], original[name]);
 
@@ -271,15 +329,18 @@ export function AttributeEditor({ extracted, value, onChange, children }: Attrib
   );
 
   return (
-    <section className={styles.editor} aria-labelledby={`${ids}-title`}>
+    <section ref={editorRef} className={styles.editor} aria-labelledby={`${ids}-title`}>
       <div className={styles.header}>
-        <h2 id={`${ids}-title`} className={styles.title}>
+        <h2 id={`${ids}-title`} ref={headingRef} tabIndex={-1} className={styles.title}>
           What we found
         </h2>
         <button
           type="button"
           className={styles.resetAll}
-          onClick={() => onChange(original)}
+          onClick={() => {
+            focusAfterRender.current = 'heading';
+            onChange(original);
+          }}
           disabled={!isEdited}
         >
           Reset all
@@ -292,9 +353,10 @@ export function AttributeEditor({ extracted, value, onChange, children }: Attrib
         <Row
           label="Other features"
           name="other features"
+          attribute="others"
           was={featuresChanged ? describeFeatures(original.others) : null}
           needsCheck={false}
-          onReset={() => set('others', original.others)}
+          onReset={() => reset('others')}
           group
         >
           <FeatureChips

@@ -12,6 +12,12 @@
   font-weight: 400;
 }
 
+/* Focused programmatically after Reset all; the focus ring would only distract. */
+.title:focus {
+  outline: none;
+  box-shadow: none;
+}
+
 .hint {
   margin-top: var(--space-1);
   margin-bottom: var(--space-3);

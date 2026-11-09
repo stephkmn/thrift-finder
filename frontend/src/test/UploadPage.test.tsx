@@ -270,7 +270,7 @@ describe('UploadPage — editor and results', () => {
     expect(searches[0].query_id).toMatch(/^mock-/);
   });
 
-  it('Edit upload restores the photo and text, and resubmitting starts a new session', async () => {
+  it('Edit upload restores the photo and text, and resubmitting a change starts a new session', async () => {
     const searches = fakeBackend();
     const { user, fileInput, textbox, submit } = setup();
     await user.upload(fileInput(), makeFile('jacket.png', 'image/png'));
@@ -288,11 +288,66 @@ describe('UploadPage — editor and results', () => {
     expect(screen.getByRole('radio', { name: 'brown' })).toBeChecked();
 
     await user.click(screen.getByRole('button', { name: 'Edit upload' }));
+    await user.type(textbox(), ', cropped');
     await user.click(submit());
     await waitFor(() => expect(searches).toHaveLength(2));
     expect(screen.getByRole('region', { name: 'Your upload' })).toHaveTextContent('q-2');
     expect(screen.getByRole('radio', { name: 'black' })).toBeChecked();
-    expect(searches[1]).toMatchObject({ query_id: 'q-2', edited_attributes: fixture.attributes });
+    expect(searches[1]).toMatchObject({
+      query_id: 'q-2',
+      edited_attributes: fixture.attributes,
+      text: 'black denim jacket, cropped',
+    });
+  });
+
+  it('resubmitting an unchanged upload keeps the session, edits, and results', async () => {
+    const searches = fakeBackend();
+    const extracts = () =>
+      vi.mocked(globalThis.fetch).mock.calls.filter(([url]) => url === '/api/extract').length;
+    const { user, fileInput, textbox, submit } = setup();
+    await user.upload(fileInput(), makeFile('jacket.png', 'image/png'));
+    await user.type(textbox(), 'black denim jacket');
+    await user.click(submit());
+    await screen.findAllByRole('article');
+
+    await user.click(screen.getByRole('radio', { name: 'brown' }));
+    await user.click(updateButton());
+    await waitFor(() => expect(searches).toHaveLength(2));
+    const results = resultTitles();
+    await user.click(screen.getByRole('radio', { name: 'green' }));
+
+    await user.click(screen.getByRole('button', { name: 'Edit upload' }));
+    await user.click(submit());
+
+    const summary = await screen.findByRole('region', { name: 'Your upload' });
+    expect(summary).toHaveTextContent('q-1');
+    expect(summary.querySelector('h2')).toHaveFocus();
+    expect(screen.getByRole('radio', { name: 'green' })).toBeChecked();
+    expect(screen.getByText('was black')).toBeInTheDocument();
+    expect(resultTitles()).toEqual(results);
+    expect(updateButton()).toBeEnabled();
+    expect(extracts()).toBe(1);
+    expect(searches).toHaveLength(2);
+  });
+
+  it('hides the pending-edits note when the search for those edits failed', async () => {
+    const searches = fakeBackend((request) =>
+      request.edited_attributes.color === 'brown'
+        ? json({ detail: 'boom' }, 500)
+        : json(rankListings(MOCK_POOL, request.edited_attributes)),
+    );
+    await extractText('black denim jacket');
+    await screen.findAllByRole('article');
+    const user = userEvent.setup();
+    const note = () => screen.queryByText(/your results don.t include these edits yet/i);
+
+    await user.click(screen.getByRole('radio', { name: 'brown' }));
+    expect(note()).toBeInTheDocument();
+
+    await user.click(updateButton());
+    expect(await screen.findByRole('alert')).toHaveTextContent('finding matches');
+    expect(searches).toHaveLength(2);
+    expect(note()).not.toBeInTheDocument();
   });
 
   it('Start over clears everything back to an empty form', async () => {
