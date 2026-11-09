@@ -6,6 +6,12 @@
   line-height: 1.05;
 }
 
+/* Focused programmatically when the form re-opens; the focus ring would only distract. */
+.heading:focus {
+  outline: none;
+  box-shadow: none;
+}
+
 .lede {
   max-width: 34rem;
   margin-top: var(--space-3);
@@ -68,7 +74,7 @@
 }
 
 .retry,
-.startOver {
+.secondary {
   min-height: 2.5rem;
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-sm);
@@ -89,20 +95,61 @@
   background: var(--color-danger-soft);
 }
 
-.result {
-  display: grid;
-  gap: var(--space-5);
-  padding-top: var(--space-2);
-}
-
-.startOver {
+.secondary {
   justify-self: start;
   border: 1px solid var(--color-border-strong);
   background: var(--color-surface);
   color: var(--color-text);
 }
 
-.startOver:hover {
+.secondary:hover {
   border-color: var(--color-text-muted);
   background: var(--color-bg);
+}
+
+/* After extract: upload summary on top, then the editor beside the results. */
+.session {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-7);
+}
+
+.update {
+  min-height: 2.75rem;
+  padding: var(--space-2) var(--space-5);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 160ms var(--ease-out);
+}
+
+.update:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+}
+
+.update:disabled {
+  background: var(--color-disabled);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+.pending {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+@media (min-width: 52rem) {
+  .workspace {
+    grid-template-columns: minmax(17rem, 20rem) minmax(0, 1fr);
+    column-gap: var(--space-6);
+    align-items: start;
+  }
 }

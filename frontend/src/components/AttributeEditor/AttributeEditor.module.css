@@ -1,0 +1,297 @@
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  font-weight: 400;
+}
+
+/* Focused programmatically after Reset all; the focus ring would only distract. */
+.title:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.hint {
+  margin-top: var(--space-1);
+  margin-bottom: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.rows {
+  display: grid;
+}
+
+/* Shared by <div> rows (one select) and <fieldset> rows (radios, chips). */
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'name meta'
+    'control control';
+  align-items: baseline;
+  gap: var(--space-2) var(--space-3);
+  min-width: 0;
+  margin: 0;
+  padding: var(--space-3) 0 var(--space-4);
+  border: 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.row:first-child {
+  border-top-color: var(--color-text);
+}
+
+.row:last-child {
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* Floating the legend takes it out of the fieldset border so it lays out like a grid item. */
+.legend {
+  grid-area: name;
+  float: left;
+  padding: 0;
+}
+
+.name {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.check {
+  display: inline-block;
+  margin-left: var(--space-2);
+  padding: 0 var(--space-2);
+  border-radius: 999px;
+  background: var(--color-frame);
+  color: var(--color-frame-text-muted);
+  font-size: var(--text-xs);
+  font-weight: 500;
+}
+
+.meta {
+  grid-area: meta;
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.was {
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.reset,
+.resetAll {
+  padding: var(--space-1) 0;
+  border: 0;
+  border-radius: 2px;
+  background: none;
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.reset:hover,
+.resetAll:hover:not(:disabled) {
+  color: var(--color-accent);
+}
+
+.resetAll:disabled {
+  color: var(--color-text-muted);
+  text-decoration: none;
+  cursor: not-allowed;
+}
+
+.control {
+  grid-area: control;
+  min-width: 0;
+}
+
+.row[data-edited] .select {
+  border-color: var(--color-accent);
+}
+
+.select {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  font: inherit;
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+/* Color: one radio per vocabulary color, name always visible next to the swatch. */
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr));
+  gap: var(--space-1) var(--space-2);
+}
+
+.swatchOption {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.25rem;
+  padding: var(--space-1) var(--space-2) var(--space-1) var(--space-1);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.swatchOption:hover {
+  background: var(--color-disabled);
+}
+
+.swatchOption:has(.swatchInput:checked) {
+  border-color: var(--color-text);
+  font-weight: 600;
+}
+
+.swatchOption:has(.swatchInput:focus-visible) {
+  box-shadow: var(--focus-ring);
+}
+
+.swatch {
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  /* Keeps white and cream visible on the white page. */
+  box-shadow: inset 0 0 0 1px rgb(15 34 64 / 0.25);
+}
+
+.swatchName {
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+}
+
+/* Other features: removable chips plus an add control. */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-3);
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-1) var(--space-1) var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: 999px;
+}
+
+.chip[data-low] {
+  border-style: dashed;
+  border-color: var(--color-meter-low);
+}
+
+.chipName {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-synthesis: none;
+}
+
+.chipName::first-letter {
+  text-transform: uppercase;
+}
+
+.chipCheck {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.remove {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.remove:hover {
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+
+.remove svg {
+  width: 1rem;
+  height: 1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+}
+
+.none {
+  margin-bottom: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.add {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.add .select {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+}
+
+.addButton {
+  min-height: 2.75rem;
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.addButton:hover:not(:disabled) {
+  border-color: var(--color-text-muted);
+  background: var(--color-bg);
+}
+
+.addButton:disabled {
+  background: var(--color-disabled);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+.actions {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
