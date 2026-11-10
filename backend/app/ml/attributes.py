@@ -29,7 +29,15 @@ SCALAR_NAMES = ("category", "color", "fabric", "fit")
 
 # Confidence reported for anything the user stated in their own description.
 STATED_CONFIDENCE = 1.0
-NEGATIONS = ("no", "not", "non", "without", "never", "don't", "dont")
+NEGATIONS = (
+    "no", "not", "non", "without", "never",
+    "don't", "dont", "doesn't", "doesnt", "didn't", "didnt",
+    "isn't", "isnt", "aren't", "arent", "won't", "wont",
+)  # fmt: skip
+# How far back a negation reaches: "I don't want a hood" puts "don't" three words before "hood".
+NEGATION_WINDOW = 3
+# A negation never reaches across these: "no zip, keep the hood", "no hood but a zipper".
+CLAUSE_BREAK = re.compile(r"[,;.!?]|\b(?:but|and)\b")
 
 
 @dataclass(frozen=True)
@@ -90,10 +98,16 @@ def _phrase_pattern(phrase: str) -> re.Pattern[str]:
 
 
 def _is_negated(text: str, start: int) -> bool:
-    """True when a NEGATIONS word, or "instead of", sits within the two words before `start`."""
+    """True when a NEGATIONS word, or "instead of", sits within NEGATION_WINDOW words before
+    `start` in the same clause."""
     # Phone keyboards type a curly apostrophe in "don't".
-    preceding = re.findall(r"[a-z']+", text[:start].lower().replace("\u2019", "'"))[-2:]
-    return preceding == ["instead", "of"] or any(word in NEGATIONS for word in preceding)
+    before = text[:start].lower().replace("\u2019", "'")
+    words = re.findall(r"[a-z']+", CLAUSE_BREAK.split(before)[-1])
+    preceding = words[-NEGATION_WINDOW:]
+    # A negation carries through an "or" list: "without a hood or zipper".
+    if "or" in preceding:
+        preceding = words
+    return "instead of" in " ".join(preceding) or any(word in NEGATIONS for word in preceding)
 
 
 class AttributeExtractor:

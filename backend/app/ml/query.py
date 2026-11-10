@@ -11,16 +11,20 @@ q_img is the upload's own embedding.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal
+from functools import lru_cache
 
 import numpy as np
 
+from backend.app.cache import EmbeddingKind
 from backend.app.ml.attributes import Vocabulary, load_vocabulary
 from backend.app.ml.encoder import Encoder, l2_normalize
 from backend.app.schemas import Attributes
 
-# Matches the kinds recorded by the query cache (backend/app/cache.py).
-EmbeddingKind = Literal["image", "text"]
+# Re-exported for callers of build_query; defined once, by the query cache.
+__all__ = ["EDIT_STRENGTH", "EmbeddingKind", "Query", "build_query", "describe", "photo_caption"]
+
+# attributes.yaml only changes between deploys, so read it once instead of on every search.
+_default_vocabulary = lru_cache(maxsize=1)(load_vocabulary)
 
 # Edit strength λ. 1.0 is the plan's starting point; tuned on the evaluation set in S3-1.
 EDIT_STRENGTH = 1.0
@@ -72,7 +76,7 @@ def build_query(
     For a text-only upload the cached embedding is the description's text embedding, so
     the edit is applied to it and it becomes the text-side query; there is no image side.
     """
-    vocabulary = vocabulary or load_vocabulary()
+    vocabulary = vocabulary or _default_vocabulary()
     original_text, edited_text = encoder.encode_texts(
         [describe(original, vocabulary), describe(edited, vocabulary)]
     )

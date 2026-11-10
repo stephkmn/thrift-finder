@@ -113,6 +113,48 @@ def test_dont_and_instead_of_negate_a_value(extractor):
     assert extractor.extract(image=image, text="brown instead of black").attributes.color == "brown"
 
 
+@pytest.mark.parametrize(
+    "text",
+    [
+        "I don't want a hood",
+        "it doesn't have a hood",
+        "isn't hooded",
+        "won't need a hood",
+        "no hood please",
+        "same jacket but without the hood",
+    ],
+)
+def test_negation_reaches_a_few_words_back(extractor, text):
+    image = FakeImage("black denim jacket with a hood")
+    assert extractor.extract(image=image, text=text).attributes.others is None
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "no zip, keep the hood",
+        "no zipper but a hood",
+        "no stains on this hooded jacket",
+    ],
+)
+def test_negation_stops_at_the_clause_and_window(extractor, text):
+    image = FakeImage("black denim jacket with a hood")
+    assert "hood" in (extractor.extract(image=image, text=text).attributes.others or [])
+
+
+def test_negation_carries_through_an_or_list(extractor):
+    image = FakeImage("black denim jacket with a hood")
+    others = extractor.extract(image=image, text="without a hood or zipper").attributes.others
+    assert others is None
+
+
+def test_instead_of_reaches_past_a_word(extractor):
+    image = FakeImage("black denim jacket with a hood")
+    assert extractor.extract(image=image, text="brown instead of the black").attributes.color == (
+        "brown"
+    )
+
+
 def test_plural_feature_is_matched_and_negated(extractor):
     image = FakeImage("black denim jacket with a hood")
     assert extractor.extract(image=image, text="no hoods please").attributes.others is None

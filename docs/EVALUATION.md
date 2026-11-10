@@ -89,5 +89,8 @@ in the index) with one color edit, e.g. `puffer_02` blue → red.
   match measured) before weighting, because image-to-image and text-to-image cosines sit on very
   different ranges. Anchors are in `CALIBRATION` in `rerank.py` and must be re-measured if the model
   or data changes.
+- **Calibration overlaps the evaluation set:** the `CALIBRATION` anchors were measured on the same
+  Openverse photos these 8 edits use, which flatters the 80% slightly. Re-measure the anchors on
+  the team-owned S1-11 set and report edit-satisfaction on photos the anchors never saw (S3-1).
 - Small sample (8 edits, color only). Feature edits (e.g. removing a hood) can't be scored yet: the
   dataset has no feature labels.

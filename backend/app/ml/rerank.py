@@ -16,10 +16,11 @@ from typing import Any
 
 import numpy as np
 
+from backend.app.cache import EmbeddingKind
 from backend.app.config import get_settings
 from backend.app.ml.encoder import get_encoder
 from backend.app.ml.index import ListingIndex, get_index
-from backend.app.ml.query import EmbeddingKind, Query, build_query
+from backend.app.ml.query import Query, build_query
 from backend.app.schemas import Attributes
 
 # (w1 image->image, w2 text->image, w3 text->text): the plan's starting point, tuned in S3-1.

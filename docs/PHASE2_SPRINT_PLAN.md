@@ -124,7 +124,7 @@ flowchart LR
   end
 
   subgraph SEARCH["② POST /api/search — backend/app/api/routes.py"]
-    QB[Query builder<br/>backend/app/ml/query.py]
+    QB[Query builder<br/>backend/app/ml/query.py<br/>keywords: backend/app/data/query_keywords.py]
     RET[Candidate retrieval<br/>backend/app/data/]
     RR[Multimodal re-ranker<br/>backend/app/ml/rerank.py]
   end
@@ -137,9 +137,9 @@ flowchart LR
   FE -->|"② query_id + original & edited attrs + text"| QB
   CACHE -->|E_img upload| QB
   QB <-.->|"E_txt(edited), E_txt(original)"| ENC
-  QB -->|keywords| RET
+  QB -->|"keywords (eBay only)"| RET
   RET -->|live| EBAY[(eBay Browse API<br/>backend/app/data/ebay_client.py)]
-  RET -->|"fallback / cache"| DS[(Local listings + precomputed embeddings<br/>backend/app/data/local_dataset.py)]
+  RET -->|"local fallback: every listing"| DS[(Local listings + precomputed embeddings<br/>backend/app/data/local_dataset.py<br/>backend/app/ml/index.py)]
   RET <-.->|embed new live listings| ENC
   RET -->|candidates + embeddings| RR
   QB -->|"q_img, q_txt"| RR
