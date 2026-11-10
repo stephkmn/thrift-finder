@@ -198,7 +198,7 @@ thrift-finder/
 ├── frontend/                 # React + Vite app
 ├── scripts/                  # ingest.py, build_embeddings.py, reproduce_sample.py, evaluate.py
 ├── samples/                  # 3 photos of Member D's own jackets (location data stripped) + expected_output.json
-├── eval/                     # S1-11 labels: queries.csv, labels.csv, result_labels.csv (no dataset images)
+├── eval/                     # S1-11 labels: queries.csv, labels.csv (no dataset images)
 ├── data/                     # gitignored except a small README and tiny sample set
 └── docs/                     # ARCHITECTURE.md, AI_MODEL.md, DATA.md, EVALUATION.md, PHASE2_SPRINT_PLAN.md
 ```

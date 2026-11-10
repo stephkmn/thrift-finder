@@ -30,4 +30,6 @@ Member D owns the set and labels it. Details: [`EVALUATION.md` → S1-11 evaluat
 - Dataset photos are second-hand inventory shots, which likely flatter results compared with photos of
   a jacket someone saw. The 8 own photos are reported separately to show the gap.
 - The dataset has no labels for `others` features (hood, zipper, ...). Member D labels them by hand for
-  the query photos and for the top-10 results of every feature-edit search.
+  the 38 query photos only, so feature edits (e.g. "remove hood") can't be scored automatically: the
+  search results carry no feature labels. They are shown as screenshot examples and listed as a
+  limitation.

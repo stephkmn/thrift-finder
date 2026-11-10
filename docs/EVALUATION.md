@@ -135,9 +135,8 @@ Member D assigns each photo's edit. The new value must be in `backend/app/ml/att
   can't be mapped is left blank and skipped. The dataset's types are coarser than our category
   vocabulary (e.g. "Jacket" vs. `bomber jacket`), so category scoring needs a vocabulary-to-type
   mapping (Member A, S3-2). Own photos are labeled by Member D.
-- **`others` features:** the dataset has none, so Member D labels all 38 query photos by hand.
-- **Feature-edit results:** for each of the 9 feature-edit searches, Member D labels whether each top-10
-  result has the edited feature (at most 90 listings, fewer where results overlap).
+- **`others` features:** the dataset has none, so Member D labels all 38 query photos by hand. Only
+  the 38 query photos are labeled; search results are not.
 
 ### Files (planned)
 
@@ -145,14 +144,15 @@ Member D assigns each photo's edit. The new value must be in `backend/app/ml/att
 |---|---|
 | `eval/queries.csv` | `query_id`, `source` (`dataset` / `own`), `split`, `row_index` (dataset), `file` (own, relative to `data/eval/own/`), `edit_attribute`, `edit_from`, `edit_to`, `seed` |
 | `eval/labels.csv` | The format `scripts/zero_shot_accuracy.py` reads: `image`, `category`, `color`, `fabric`, `fit`, `others` |
-| `eval/result_labels.csv` | `query_id`, `listing_id`, `feature`, `present` (`yes` / `no`) |
 
 ### What it measures
 
 - Attribute accuracy and `others` precision/recall/F1 on all 38 queries.
-- Edit-satisfaction for the 24 color edits (from the dataset's color labels on results), the 5
-  fabric/fit edits where the results carry those labels (`cut` is often empty), and the 9 feature edits
-  (from `eval/result_labels.csv`).
+- Edit-satisfaction for the 24 color edits (from the dataset's color labels on results) and the 5
+  fabric/fit edits where the results carry those labels (`cut` is often empty).
+- **Feature edits are not scored automatically.** The search listings have no `others` labels, so
+  whether the top 10 still have a hood can't be computed. The 9 feature edits are shown as screenshot
+  examples (and in the failure log) and listed as a limitation.
 - **Dataset and own photos are reported separately:** dataset photos are second-hand inventory shots and
   likely flatter the results; the own photos show performance on photos closer to real use.
 
