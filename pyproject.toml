@@ -12,6 +12,8 @@ dependencies = [
     # Used by app/ml/ outside the model itself (vocabulary, scoring), so CI can test it without torch.
     "numpy>=1.26",
     "pyyaml>=6.0",
+    # /api/extract decodes uploads before calling the model; small, so CI tests decoding without torch.
+    "pillow>=10.4",
 ]
 
 [project.optional-dependencies]
