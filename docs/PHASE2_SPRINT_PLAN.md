@@ -176,8 +176,11 @@ Uploaded images are processed in memory and never written to disk or logs (Phase
 5. **Baselines for preliminary results:** keyword-only search; image-only (no edit); base CLIP vs. FashionCLIP.
 
 ### 4.4 Preliminary evaluation (for the progress report; full evaluation is Phase 3)
-- **Query set:** 15–20 outerwear queries (photos the team took or images we have rights to), each with an intended edit.
-- **Metrics:** attribute-extraction accuracy on ~30 hand-labeled images; Precision@10 (team-judged relevance);
+- **Query set:** 38 outerwear queries, each with an intended edit (S1-11; decision in `docs/DECISIONS.md`):
+  30 photos from the dataset's `test` split (never indexed, so never among the search results) and
+  8 photos of Member D's own jackets. Composition and labels: `docs/EVALUATION.md` → S1-11 evaluation set.
+- **Metrics:** attribute-extraction accuracy on the 38 queries (dataset labels mapped to our vocabulary;
+  `others` features labeled by hand); Precision@10 (team-judged relevance);
   edit-satisfaction rate (share of top 10 matching the edited attribute, e.g., color = brown); median latency.
 - **Comparisons:** image-only vs. image + text/edit; keyword baseline vs. ours.
 - **Failure log:** 3–5 representative failures with screenshots for the limitations section.
@@ -194,7 +197,8 @@ thrift-finder/
 │   └── tests/
 ├── frontend/                 # React + Vite app
 ├── scripts/                  # ingest.py, build_embeddings.py, reproduce_sample.py, evaluate.py
-├── samples/                  # 3 team-owned sample query images + expected_output.json
+├── samples/                  # 3 photos of Member D's own jackets (location data stripped) + expected_output.json
+├── eval/                     # S1-11 labels: queries.csv, labels.csv, result_labels.csv (no dataset images)
 ├── data/                     # gitignored except a small README and tiny sample set
 └── docs/                     # ARCHITECTURE.md, AI_MODEL.md, DATA.md, EVALUATION.md, PHASE2_SPRINT_PLAN.md
 ```
@@ -245,7 +249,7 @@ gantt
 | S1-8 | FastAPI skeleton with `/api/health` + stub `/api/extract` | C | Runs locally |
 | S1-9 | React + Vite skeleton: upload form calling stub endpoint | D | Upload round-trips to stub |
 | S1-10 | Architecture diagram v1 + README skeleton | C | Merged |
-| S1-11 | Collect 15–20 team-owned query photos + intended edits; hand-label ~30 images | D + all | `eval/queries.csv` merged |
+| S1-11 | Build the hybrid evaluation set: 30 seeded test-split dataset photos + 8 own photos, intended edits, `others` labels (re-scoped Nov 10, see `docs/DECISIONS.md`) | D | `eval/queries.csv` + `eval/labels.csv` merged by Thu Nov 12 |
 
 **Exit criteria:** PoC script demonstrated at review; tag `v0.1-poc`; eBay go/no-go decision made (live vs. fallback for the MVP).
 
@@ -353,7 +357,7 @@ Phase 3 combined report; include an LLM tools disclosure as in Phase 1.
 | Front-end/back-end integration slips | Med / Med | Contract-first schemas in Sprint 1; stub endpoints; mid-sprint sync | C | Thin MVP not working by Nov 5 |
 | Slow inference on laptops | Low / Med | ViT-B/32 size model; precompute listing embeddings; CPU-friendly defaults | A + C | Search > 5 s |
 | Secrets leaked to GitHub | Low / High | `.env` ignored, `.env.example`, CI secret scan, PR review | C | Any scan hit → rotate keys immediately |
-| Image rights for sample/eval images | Med / Med | Use team-taken photos or licensed dataset images only | D | — |
+| Image rights for sample/eval images | Med / Med | Dataset query photos from the CC BY 4.0 `test` split, credited and not committed; own photos with location data stripped and no faces | D | — |
 | Member availability (midterms, Nov 11 holiday) | Med / Med | Pair owners on each module; async standups; buffer day | Scrum Master | Two missed standups |
 | Uneven contribution (peer-review risk) | Low / High | Visible ownership, own-account commits, weekly PR reviews | All | — |
 
