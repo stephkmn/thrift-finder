@@ -1,13 +1,12 @@
 """Unit tests for zero-shot attribute extraction (S1-5, S1-6).
 
-A one-hot word fake encoder stands in for CLIP so these run in CI without torch. Set
+A one-hot word fake encoder (backend/tests/fakes.py) stands in for CLIP so these run in CI without torch. Set
 RUN_MODEL_TESTS=1 to also run the real-model smoke test (downloads ~600 MB on first run).
 """
 
 from __future__ import annotations
 
 import os
-import re
 from collections import Counter
 from dataclasses import replace
 
@@ -16,47 +15,7 @@ import pytest
 
 from backend.app.ml.attributes import AttributeExtractor, load_vocabulary
 from backend.app.schemas import ExtractResponse
-
-
-class FakeImage:
-    """Stands in for a PIL image: the fake encoder embeds its description instead of pixels."""
-
-    def __init__(self, description: str) -> None:
-        self.description = description
-
-
-class FakeEncoder:
-    """Embeds text as a sum of one-hot word vectors; words after 'without' subtract.
-
-    One-hot keeps unrelated words exactly orthogonal, so scores only move for shared words.
-    """
-
-    logit_scale = 100.0
-    dim = 1024
-
-    def __init__(self) -> None:
-        self._index: dict[str, int] = {}
-
-    def _word(self, word: str) -> np.ndarray:
-        vector = np.zeros(self.dim)
-        vector[self._index.setdefault(word, len(self._index))] = 1.0
-        return vector
-
-    def _embed(self, text: str) -> np.ndarray:
-        vector = np.zeros(self.dim)
-        sign = 1.0
-        for word in re.findall(r"[a-z]+", text.lower()):
-            if word == "without":
-                sign = -1.0
-            elif word not in {"a", "an", "of", "the", "photo", "product", "with"}:
-                vector += sign * self._word(word)
-        return vector / max(np.linalg.norm(vector), 1e-12)
-
-    def encode_texts(self, texts):
-        return np.stack([self._embed(text) for text in texts]).astype(np.float32)
-
-    def encode_images(self, images):
-        return np.stack([self._embed(image.description) for image in images]).astype(np.float32)
+from backend.tests.fakes import FakeEncoder, FakeImage
 
 
 @pytest.fixture(scope="module")
@@ -145,6 +104,77 @@ def test_negated_value_is_not_applied(extractor):
     attributes, *_ = extractor.extract(image=FakeImage("black wool coat"), text="not black")
     assert attributes.color == "black"
     assert attributes.fabric == "wool"
+
+
+def test_dont_and_instead_of_negate_a_value(extractor):
+    image = FakeImage("black denim jacket with a hood")
+    for text in ["I don't want black, brown instead", "I don\u2019t want black, brown instead"]:
+        assert extractor.extract(image=image, text=text).attributes.color == "brown"
+    assert extractor.extract(image=image, text="brown instead of black").attributes.color == "brown"
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "I don't want a hood",
+        "it doesn't have a hood",
+        "isn't hooded",
+        "won't need a hood",
+        "no hood please",
+        "same jacket but without the hood",
+    ],
+)
+def test_negation_reaches_a_few_words_back(extractor, text):
+    image = FakeImage("black denim jacket with a hood")
+    assert extractor.extract(image=image, text=text).attributes.others is None
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "no zip, keep the hood",
+        "no zipper but a hood",
+        "no stains on this hooded jacket",
+    ],
+)
+def test_negation_stops_at_the_clause_and_window(extractor, text):
+    image = FakeImage("black denim jacket with a hood")
+    assert "hood" in (extractor.extract(image=image, text=text).attributes.others or [])
+
+
+def test_negation_carries_through_an_or_list(extractor):
+    image = FakeImage("black denim jacket with a hood")
+    others = extractor.extract(image=image, text="without a hood or zipper").attributes.others
+    assert others is None
+
+
+def test_instead_of_reaches_past_a_word(extractor):
+    image = FakeImage("black denim jacket with a hood")
+    assert extractor.extract(image=image, text="brown instead of the black").attributes.color == (
+        "brown"
+    )
+
+
+def test_plural_feature_is_matched_and_negated(extractor):
+    image = FakeImage("black denim jacket with a hood")
+    assert extractor.extract(image=image, text="no hoods please").attributes.others is None
+    assert extractor.extract(text="a coat with zippers").attributes.others == ["zipper"]
+
+
+class WithLeaningEncoder(FakeEncoder):
+    """Counts the word "with", like CLIP does: any description saying "with" then sits
+    closer to every "a jacket with X" prompt than to its "without X" partner."""
+
+    stopwords = FakeEncoder.stopwords - {"with"}
+
+
+def test_text_only_reports_only_the_features_it_names():
+    extractor = AttributeExtractor(WithLeaningEncoder())
+    image_result = extractor.extract(image=FakeImage("black jacket with a hood"))
+    assert len(image_result.attributes.others or []) > 1  # the bias this guards against
+    text_result = extractor.extract(text="brown suede bomber jacket with a hood")
+    assert text_result.attributes.others == ["hood"]
+    assert text_result.confidences.others == {"hood": 1.0}
 
 
 def test_text_only_extraction_returns_valid_contract(extractor):

@@ -1,5 +1,9 @@
 """Per-attribute zero-shot accuracy, FashionCLIP vs. base CLIP (S1-5).
 
+Scalars report accuracy. `others` reports precision, recall, and F1 over the features,
+since most features are absent from most photos and plain accuracy would reward
+predicting "none" everywhere.
+
 Labels CSV columns: image,category,color,fabric,fit,others
   - image: path relative to the CSV file
   - scalar columns: a value from backend/app/ml/attributes.yaml, or blank if unknown
@@ -14,6 +18,8 @@ from __future__ import annotations
 
 import argparse
 import csv
+import statistics
+import time
 from collections import defaultdict
 from pathlib import Path
 
@@ -45,15 +51,28 @@ def read_labels(path: Path) -> list[dict]:
     return rows
 
 
-def score_model(model_name: str, dtype: str, rows: list[dict]) -> tuple[dict, list[str]]:
+OTHERS_METRICS = ("others precision", "others recall", "others F1")
+
+
+def _ratio(numerator: int, denominator: int) -> float | None:
+    return numerator / denominator if denominator else None
+
+
+def score_model(
+    model_name: str, dtype: str, rows: list[dict]
+) -> tuple[dict[str, tuple[float | None, int]], list[str], float]:
+    """Returns {metric: (score, n)}, a list of misses, and the median extract time in ms."""
     extractor = AttributeExtractor(get_encoder(model_name, dtype))
-    features = list(extractor.vocabulary.features)
     correct: dict[str, int] = defaultdict(int)
     total: dict[str, int] = defaultdict(int)
+    true_pos = false_pos = false_neg = others_images = 0
+    latencies = []
     mistakes = []
     for row in rows:
         with Image.open(row["image"]) as image:
+            started = time.perf_counter()
             attributes = extractor.extract(image=image).attributes
+            latencies.append((time.perf_counter() - started) * 1000)
         for name in SCALAR_NAMES:
             if row[name] is None:
                 continue
@@ -64,16 +83,23 @@ def score_model(model_name: str, dtype: str, rows: list[dict]) -> tuple[dict, li
                 mistakes.append(f"{row['image'].name}: {name} {row[name]} -> {predicted}")
         if row["others"] is None:
             continue
+        others_images += 1
         predicted_others = set(attributes.others or [])
-        for feature in features:
-            total["others"] += 1
-            correct["others"] += (feature in predicted_others) == (feature in row["others"])
+        true_pos += len(predicted_others & row["others"])
+        false_pos += len(predicted_others - row["others"])
+        false_neg += len(row["others"] - predicted_others)
         if predicted_others != row["others"]:
             missed = sorted(row["others"] - predicted_others)
             extra = sorted(predicted_others - row["others"])
             mistakes.append(f"{row['image'].name}: others missed={missed} extra={extra}")
-    accuracy = {name: (correct[name] / total[name], total[name]) for name in total}
-    return accuracy, mistakes
+
+    scores = {name: (correct[name] / total[name], total[name]) for name in total}
+    precision = _ratio(true_pos, true_pos + false_pos)
+    recall = _ratio(true_pos, true_pos + false_neg)
+    f1 = 2 * precision * recall / (precision + recall) if precision and recall else None
+    for metric, value in zip(OTHERS_METRICS, (precision, recall, f1), strict=True):
+        scores[metric] = (value, others_images)
+    return scores, mistakes, statistics.median(latencies)
 
 
 def main() -> None:
@@ -86,21 +112,28 @@ def main() -> None:
     dtype = get_settings().model_dtype
     rows = read_labels(args.labels)
     results = {}
+    latency = {}
     for model_name in args.models:
         print(f"Scoring {model_name} on {len(rows)} images ({dtype})...")
-        results[model_name], mistakes = score_model(model_name, dtype, rows)
+        results[model_name], mistakes, latency[model_name] = score_model(model_name, dtype, rows)
         for mistake in mistakes:
             print(f"  miss  {mistake}")
 
     header = "| Attribute | n | " + " | ".join(m.split("/")[-1] for m in args.models) + " |"
     lines = [header, "|---|---|" + "---|" * len(args.models)]
-    for name in [*SCALAR_NAMES, "others"]:
+    for name in [*SCALAR_NAMES, *OTHERS_METRICS]:
         first = results[args.models[0]].get(name)
-        if first is None:
+        if first is None or first[1] == 0:
             continue
-        cells = [f"{results[m][name][0]:.0%}" for m in args.models]
-        label = "others (per-feature yes/no)" if name == "others" else name
-        lines.append(f"| {label} | {first[1]} | " + " | ".join(cells) + " |")
+        cells = [
+            "n/a" if results[m][name][0] is None else f"{results[m][name][0]:.0%}"
+            for m in args.models
+        ]
+        lines.append(f"| {name} | {first[1]} | " + " | ".join(cells) + " |")
+    cells = [f"{latency[m]:.0f} ms" for m in args.models]
+    lines.append(
+        f"| median extract time ({dtype}, CPU) | {len(rows)} | " + " | ".join(cells) + " |"
+    )
     table = "\n".join(lines)
     print("\n" + table)
     if args.out:
