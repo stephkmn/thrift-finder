@@ -15,7 +15,7 @@ from fastapi.concurrency import run_in_threadpool
 
 from backend.app.api.routes import router
 from backend.app.config import get_settings
-from backend.app.ml.attributes import get_extractor
+from backend.app.extractor_loader import LOAD_ERRORS, get_extractor_once
 
 logger = logging.getLogger(__name__)
 
@@ -29,9 +29,9 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     """
     if get_settings().preload_model:
         try:
-            await run_in_threadpool(get_extractor)
+            await run_in_threadpool(get_extractor_once())
             logger.info("Attribute model loaded")
-        except (ImportError, RuntimeError, OSError):
+        except LOAD_ERRORS:
             logger.warning("Could not preload the attribute model", exc_info=True)
     yield
 

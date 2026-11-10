@@ -138,6 +138,29 @@ def test_extract_rejects_oversized_image(client):
     assert response.status_code == 413
 
 
+def _encoded(image: Image.Image, fmt: str) -> bytes:
+    buffer = io.BytesIO()
+    image.save(buffer, format=fmt)
+    return buffer.getvalue()
+
+
+def test_extract_rejects_a_real_format_that_is_not_allowed(client, extractor):
+    # A GIF that claims to be a PNG: the declared type passes, the decoded format must not.
+    gif = _encoded(Image.new("RGB", (4, 4), "black"), "GIF")
+    response = _post(client, files=_image(gif, "image/png"))
+    assert response.status_code == 415
+    assert extractor.calls == []
+
+
+def test_extract_rejects_too_many_pixels_before_decoding(client, extractor):
+    # 7000 x 7000 = 49 MP from a file of a few hundred KB: under the byte cap, over the pixel cap.
+    huge = _encoded(Image.new("1", (7000, 7000)), "PNG")
+    assert len(huge) < 10 * 1024 * 1024
+    response = _post(client, files=_image(huge))
+    assert response.status_code == 413
+    assert extractor.calls == []
+
+
 def test_extract_rejects_undecodable_image_with_422(client, extractor):
     response = _post(client, files=_image(b"definitely not a png"))
     assert response.status_code == 422

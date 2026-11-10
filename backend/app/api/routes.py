@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import io
 import logging
+import warnings
 from collections.abc import Callable
 from typing import Annotated, Protocol
 
@@ -12,7 +13,8 @@ from fastapi.concurrency import run_in_threadpool
 from PIL import Image, UnidentifiedImageError
 
 from backend.app.cache import QueryCache, get_query_cache
-from backend.app.ml.attributes import Extraction, get_extractor
+from backend.app.extractor_loader import LOAD_ERRORS, get_extractor_once
+from backend.app.ml.attributes import Extraction
 from backend.app.schemas import ExtractResponse
 
 logger = logging.getLogger(__name__)
@@ -22,6 +24,11 @@ router = APIRouter()
 # 10 MiB cap — re-tune once Member A knows the model's input ceiling.
 MAX_IMAGE_BYTES = 10 * 1024 * 1024
 ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp"}
+# The format Pillow actually finds in the bytes; the declared content type is only a claim.
+ALLOWED_IMAGE_FORMATS = {"JPEG", "PNG", "WEBP"}
+# The 10 MiB cap is on the file, not the pixels: a small PNG can decode to hundreds of
+# megapixels. CLIP resizes to 224 px, so anything near this many pixels is a mistake or abuse.
+MAX_IMAGE_PIXELS = 40_000_000
 
 
 class Extractor(Protocol):
@@ -37,7 +44,7 @@ def get_extractor_loader() -> Callable[[], Extractor]:
     A loader rather than the extractor itself, so request validation (413/415/422) runs
     before any model loading and stays fast even when the model is unavailable.
     """
-    return get_extractor
+    return get_extractor_once()
 
 
 @router.get("/api/health")
@@ -77,14 +84,15 @@ async def extract(
                 status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
                 detail="Image exceeds 10 MiB limit.",
             )
-        decoded = _decode_image(payload)
+        # Decoding a large photo is slow, synchronous work: keep it off the event loop too.
+        decoded = await run_in_threadpool(_decode_image, payload)
 
     try:
         # Both steps run in worker threads: a first-time model load and inference are
         # slow, synchronous work that must not block the event loop.
         extractor = await run_in_threadpool(load_extractor)
         extraction = await run_in_threadpool(extractor.extract, image=decoded, text=cleaned_text)
-    except (ImportError, RuntimeError, OSError) as exc:
+    except LOAD_ERRORS as exc:
         logger.exception("Attribute extraction failed")
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, MODEL_UNAVAILABLE) from exc
 
@@ -96,11 +104,27 @@ async def extract(
     )
 
 
+TOO_MANY_PIXELS = "That image's dimensions are too large. Try a smaller photo."
+
+
 def _decode_image(payload: bytes) -> Image.Image:
+    """Decode in memory, checking the real format and pixel count before decoding pixels."""
     try:
-        decoded = Image.open(io.BytesIO(payload))
-        decoded.load()
-    except (UnidentifiedImageError, OSError, Image.DecompressionBombError) as exc:
+        with warnings.catch_warnings():
+            # Pillow only warns between ~89 and ~179 megapixels; treat that as an error too.
+            warnings.simplefilter("error", Image.DecompressionBombWarning)
+            decoded = Image.open(io.BytesIO(payload))  # reads the header only
+            if decoded.format not in ALLOWED_IMAGE_FORMATS:
+                raise HTTPException(
+                    status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+                    detail="Unsupported image type. Use JPEG, PNG, or WebP.",
+                )
+            if decoded.width * decoded.height > MAX_IMAGE_PIXELS:
+                raise HTTPException(status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, TOO_MANY_PIXELS)
+            decoded.load()
+    except (Image.DecompressionBombError, Image.DecompressionBombWarning) as exc:
+        raise HTTPException(status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, TOO_MANY_PIXELS) from exc
+    except (UnidentifiedImageError, OSError) as exc:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Couldn't read that image. Try a JPEG, PNG, or WebP photo.",

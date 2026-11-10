@@ -30,8 +30,9 @@ npm run dev              # http://localhost:5173
 ```
 
 Open the frontend URL in a browser, drop an image onto the upload zone, and
-confirm the attribute card renders a response whose `query_id` starts with
-`stub-` (backend) rather than `mock-` (frontend-only fixture).
+confirm the attributes come back with a `query_id` that does **not** start with
+`mock-` (a `mock-` id means the frontend is still using its in-browser fixture).
+The real model needs the `ml` extra; see [Run](#run).
 
 ## Configuration
 
