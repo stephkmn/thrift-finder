@@ -94,7 +94,8 @@ thrift-finder/
 │   ├── DATA.md                # (planned S3-9) data sources and license
 │   └── EVALUATION.md          # (planned S3-2) preliminary results
 ├── scripts/                   # (planned S4) ingest, build_embeddings, reproduce_sample, evaluate
-├── samples/                   # (planned S4) 3 team-owned sample images + expected_output.json
+├── samples/                   # (planned S4) 3 photos of Member D's own jackets + expected_output.json
+├── eval/                      # (planned S1-11) evaluation labels; see docs/EVALUATION.md
 ├── data/                      # gitignored except small README + sample set
 ├── pyproject.toml
 ├── .env.example

@@ -55,7 +55,7 @@ Image only, no text description.
 ### Limitations and next steps
 
 - 16 internet photos is far too few to tune on; tuning now would only fit these photos.
-- Re-run on the team-owned labeled set (S1-11), then tune thresholds and the category vocabulary
+- Re-run on the S1-11 evaluation set (below), then tune thresholds and the category vocabulary
   (S3-1).
 
 ### Reproduce
@@ -91,6 +91,73 @@ in the index) with one color edit, e.g. `puffer_02` blue → red.
   or data changes.
 - **Calibration overlaps the evaluation set:** the `CALIBRATION` anchors were measured on the same
   Openverse photos these 8 edits use, which flatters the 80% slightly. Re-measure the anchors on
-  the team-owned S1-11 set and report edit-satisfaction on photos the anchors never saw (S3-1).
+  the S1-11 evaluation set and report edit-satisfaction on photos the anchors never saw (S3-1).
 - Small sample (8 edits, color only). Feature edits (e.g. removing a hood) can't be scored yet: the
   dataset has no feature labels.
+
+## S1-11 evaluation set (hybrid)
+
+**Owner:** Member D · **Due:** Thu Nov 12, 2026 · **Status:** planned · **Decision:** [`DECISIONS.md`](DECISIONS.md)
+
+38 queries, each with one intended edit. It replaces the 16 Openverse photos above for tuning (S3-1)
+and for the progress report's results.
+
+| Source | Photos | How they are chosen | What is committed |
+|---|---|---|---|
+| Dataset `test` split | 30 | Seeded random draw, stratified by garment type | Labels only; images re-downloadable into `data/eval/dataset/` (gitignored) |
+| Member D's own jackets | 8 | 4 jackets × 2 shots (laid flat; worn or hung); at least 2 hooded | 3 photos in `samples/` (location data stripped, no faces); the rest stay in `data/eval/own/` (gitignored) |
+
+### Dataset queries
+
+- **Pool: 212 `test`-split photos** whose type passes the same outerwear rule as the search index
+  (`is_outerwear` in `backend/app/data/preprocess.py`): Jacket 114, Blazer 41, Vest 37, Winter Jacket 15,
+  Rain Jacket 3, Denim Jacket 2 (dataset statistics, Nov 10, 2026). The 67 `test` photos typed only
+  "Outerwear" are left out, as they are from the index.
+- **Never in the search corpus:** the index is built from the `train` split only.
+- **Draw:** 30 photos at random with seed 451, stratified by type in proportion to the pool
+  (largest-remainder rounding): Jacket 16, Blazer 6, Vest 5, Winter Jacket 2, Rain Jacket 1. The seed and
+  each photo's row index are recorded in `eval/queries.csv`, so anyone can rebuild the set.
+
+### Intended edits
+
+| Queries | Color | Fabric or fit | Feature (add/remove an `others` feature) |
+|---|---|---|---|
+| 30 dataset photos | 20 | 5 | 5 |
+| 8 own photos | 4 | — | 4 (e.g. remove the hood) |
+| **Total** | **24** | **5** | **9** |
+
+Member D assigns each photo's edit. The new value must be in `backend/app/ml/attributes.yaml`.
+
+### Labels
+
+- **Category, color, fabric, fit:** for dataset photos, converted from the dataset's `type`, `colors`,
+  `material`, and `cut` with the same mappings the index uses (`backend/app/ml/index.py`); a value that
+  can't be mapped is left blank and skipped. The dataset's types are coarser than our category
+  vocabulary (e.g. "Jacket" vs. `bomber jacket`), so category scoring needs a vocabulary-to-type
+  mapping (Member A, S3-2). Own photos are labeled by Member D.
+- **`others` features:** the dataset has none, so Member D labels all 38 query photos by hand. Only
+  the 38 query photos are labeled; search results are not.
+
+### Files (planned)
+
+| File | Contents |
+|---|---|
+| `eval/queries.csv` | `query_id`, `source` (`dataset` / `own`), `split`, `row_index` (dataset), `file` (own, relative to `data/eval/own/`), `edit_attribute`, `edit_from`, `edit_to`, `seed` |
+| `eval/labels.csv` | The format `scripts/zero_shot_accuracy.py` reads: `image`, `category`, `color`, `fabric`, `fit`, `others` |
+
+### What it measures
+
+- Attribute accuracy and `others` precision/recall/F1 on all 38 queries.
+- Edit-satisfaction for the 24 color edits (from the dataset's color labels on results) and the 5
+  fabric/fit edits where the results carry those labels (`cut` is often empty).
+- **Feature edits are not scored automatically.** The search listings have no `others` labels, so
+  whether the top 10 still have a hood can't be computed. The 9 feature edits are shown as screenshot
+  examples (and in the failure log) and listed as a limitation.
+- **Dataset and own photos are reported separately:** dataset photos are second-hand inventory shots and
+  likely flatter the results; the own photos show performance on photos closer to real use.
+
+### Credit
+
+Dataset photos: Nauman, F. (2024). *Clothing Dataset for Second-Hand Fashion* (Version 3). Zenodo.
+https://doi.org/10.5281/zenodo.13788681. CC BY 4.0. Credit the dataset wherever its images appear
+(report, screenshots, UI).
