@@ -38,16 +38,83 @@ This dataset contains archival secondhand clothing rather
 than active marketplace listings. Therefore, actual
 purchase links and verified sale prices are unavailable.
 
+## Preprocessing and normalized records (S3-9)
+
+The transformation is implemented in `scripts/ingest.py` and
+`backend/app/data/preprocess.py`. For each streamed source row:
+
+1. **Select by garment type.** Keep labels containing a whole-word match for
+   `jacket`, `coat`, `blazer`, `parka`, `windbreaker`, `anorak`, `vest`, or `gilet`
+   (case-insensitive). This is a **label-based filter**, not a visual clothing
+   classifier. Incorrect source labels can admit non-outerwear items.
+2. **Normalize the image.** Correct EXIF orientation, convert to RGB, preserve
+   aspect ratio while limiting the longest side to 512 pixels, and save a JPEG
+   (quality 85, optimized). The originals are not written to the project.
+3. **Skip duplicates and unreadable images.** Hash the resulting JPEG bytes with
+   SHA-256 and skip exact matches **within the current ingestion run**. This
+   does not detect near duplicates or guarantee no train/test visual overlap.
+4. **Normalize metadata.** Collapse repeated whitespace; turn known empty
+   markers into `null`; parse color lists (including string-encoded lists),
+   remove repeated colors case-insensitively, and preserve the available source
+   labels rather than inferring attributes from photographs.
+5. **Record provenance.** Build an ID (`secondhand-` plus the zero-padded
+   zero-based row index) and store `dataset_id`, `source_index`, and a relative
+   `image_path`. A `source_index` is meaningful **within its dataset split**;
+   it is not a globally unique source listing identifier.
+
+The JSONL output has one record per garment. The main fields are:
+
+| Field | Meaning |
+|---|---|
+| `id`, `title`, `source` | Local result identifier, label-based title, and `"local"` provenance |
+| `dataset_id`, `source_index` | Hugging Face dataset ID and original split row position |
+| `image_path` | Repository-relative local JPEG path; **not** a public URL |
+| `attributes` | Available `type`, `category`, `colors`, `material`, `cut`, `pattern`, and `brand` |
+| `price_band` | Original categorical/range price label, if present |
+| `price`, `listing_url` | Always `null` for archival garments; no verified live price or purchase link |
+
+The loader (`backend/app/data/local_dataset.py`) rejects malformed JSON,
+missing mandatory fields, unsafe paths, and missing images by default, and
+skips repeated record IDs. The importer does **not** create embedding vectors;
+`python -m scripts.build_embeddings` creates the local image/text index after
+successful ingestion. Rebuild the index if the indexed dataset or model changes.
+
+### Data provenance, reproducibility, and retention
+
+- The train and test splits are ingested into separate directories. Use the
+  **train split for retrieval** and the **test split for evaluation**, without
+  copying query photos into the search corpus.
+- Recorded runs used source revision `main`, which is **not pinned**. A fresh
+  run may differ if the upstream dataset changes. For a fixed revision, pass
+  `--revision <HF_COMMIT_SHA>` and record the commit plus run counts.
+- Both the local dataset and generated embeddings stay under gitignored
+  `data/`. Only code, allowable sample images, and evaluation metadata are
+  committed. CC BY 4.0 attribution still applies when redisplaying dataset
+  images; resizing is a modification to disclose.
+- User-uploaded query photos must stay in memory and must not be written to
+  dataset files or application logs. The evaluation exceptions and credited
+  sample photos are described under **Privacy and evaluation** below.
+- Live eBay data is **not part of this licensed fallback dataset**. The
+  separate S1-1 eBay PR documents the approved no-persistence exemption and
+  the standalone API feasibility client. Do not silently import eBay results
+  into the local index or retain them in persistent caches.
+
 ## Reproduce the local fallback dataset
 
 From the repository root, with Python 3.11 activated:
 
 ```bash
 python -m pip install -e ".[dev,data]"
-python scripts/ingest.py --limit 25
-python scripts/ingest.py --limit 500
-# Evaluation pool: test split in a separate location (does not alter search data)
+# Optional quick smoke run (rewrites train metadata with 25 records):
+python scripts/ingest.py --split train --limit 25
+# Full local search corpus; re-run after the smoke test:
+python scripts/ingest.py --split train --limit 500
+# Evaluation pool: separate test split, not part of the search index:
 python scripts/ingest.py --split test --limit 300
+# Build 500 listing embeddings after ingesting the full train split:
+python -m scripts.build_embeddings --batch-size 16
+# Validate local metadata and image files:
+python -c "from backend.app.data.local_dataset import load_listings; print(len(load_listings()), 'listings valid')"
 pytest backend/tests -q
 ruff check backend/ scripts/
 ```
