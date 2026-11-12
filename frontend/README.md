@@ -31,14 +31,34 @@ React + TypeScript + Vite app for Thrift Searcher (CECS 451, Group 7). Owner: Me
   successful search, and disabled while a search is running. The request carries the extract `query_id`,
   the model's attributes, the edited attributes, and the original description as `text` (left out when
   there was none). Responses from superseded searches are ignored.
-- **Results grid** (`ResultsGrid`): up to 10 cards with the image (title as alt text), title, USD price or
+- **Results grid** (`ResultsGrid`, restyled as a polaroid board in S3-5, below): up to 10 cards with the image (title as alt text), title, USD price or
   "Price unavailable", a match-score bar with the rounded number, a source badge ("eBay" or "Archive (not
   for sale)"), and **View listing**, which opens the original listing in a new tab
   (`rel="noopener noreferrer"`). Cards with no `listing_url` have no link. While searching, skeleton cards
   show and "Finding matches…" is announced politely; zero results show a friendly empty message; errors
   show an alert with **Retry**, which resends the same request.
 
-**Planned next** (see `docs/PHASE2_SPRINT_PLAN.md`): polaroid results board (S3-5), details page (S3-6).
+**Built in S3-5:** the results are a polaroid board, as the Phase 1 report describes it ("polaroid frames,
+some details written on frame, hover to blur image for more details, clicking on picture takes you to details
+page").
+
+- **Polaroids.** Each result is a white instant-photo frame taped to the board at a slight tilt (five angles in
+  rotation, so neighbors never match). The title, the price ("Price unavailable" for archive items), and the
+  match score are written on the frame. Rank order still reads left to right, top to bottom. The loading
+  skeletons use the same frame.
+- **Hover to blur.** With a mouse, hovering a polaroid (or tabbing into it) straightens and lifts it, blurs the
+  photo, and shows an overlay with the source badge, a match bar, and **View listing**. Touch screens have no
+  hover, so there the source badge and **View listing** sit under the caption instead. The switch is CSS only
+  (`@media (hover: hover) and (pointer: fine)`): the details exist once in the page, and screen readers read
+  them in the same order either way. The match bar is decorative; the number on the frame is what gets read.
+- **Click → details page.** `ResultsGrid` takes an optional `onOpenDetails(id)`. When it is passed, each photo
+  becomes a button ("See details: <title>") and the overlay shows a "Click for details" hint. `UploadPage` does
+  not pass it yet, so photos are not clickable until S3-6 adds the details page.
+
+Screenshots (mock data): `docs/screenshots/s3-5-board-desktop.png`, `s3-5-board-hover.png`, and
+`s3-5-board-phone.png`.
+
+**Planned next** (see `docs/PHASE2_SPRINT_PLAN.md`): details page (S3-6), which passes `onOpenDetails`.
 
 The request/response types in `src/api/types.ts` are a **draft** of the S1-4 API contract and must be confirmed
 against the backend's Pydantic schemas. `price` and `listing_url` are always present but `null` for local
@@ -167,5 +187,8 @@ the console.
   sale)"), because the fallback dataset has neither (`docs/DATA.md`).
 - The description is sent with every search but cannot be edited in the editor; use **Edit upload**.
 - HEIC/HEIF photos (the iPhone default) are rejected. Export them as JPG first.
+- Polaroid photos are not clickable until S3-6 adds the details page. Until then, an archive item has nothing
+  to focus with the keyboard, so keyboard users can't open its hover overlay; the only detail it hides is the
+  "Archive (not for sale)" badge, which screen readers still read.
 - The contract types are a draft until Members A and C confirm them.
 - TypeScript is pinned to 6.0 because `typescript-eslint` does not support TypeScript 7 yet.
