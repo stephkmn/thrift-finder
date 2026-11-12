@@ -14,6 +14,7 @@ from fastapi import FastAPI
 from fastapi.concurrency import run_in_threadpool
 
 from backend.app.api.routes import router
+from backend.app.api.search import router as search_router
 from backend.app.config import get_settings
 from backend.app.extractor_loader import LOAD_ERRORS, get_extractor_once
 
@@ -38,3 +39,4 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 
 app = FastAPI(title="Thrift Searcher", version="0.1.0", lifespan=lifespan)
 app.include_router(router)
+app.include_router(search_router)
