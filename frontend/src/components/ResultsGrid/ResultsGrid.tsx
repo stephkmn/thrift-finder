@@ -23,29 +23,36 @@ const SOURCE_LABELS: Record<SearchResult['source'], string> = {
 };
 
 function ResultCard({ result }: { result: SearchResult }) {
+  const titleId = useId();
   const score = Math.round(result.match_score);
   return (
     <li className={styles.item}>
-      <article className={styles.card}>
-        <img className={styles.image} src={result.image_url} alt={result.title} loading="lazy" />
-        <div className={styles.body}>
+      <article className={styles.polaroid} aria-labelledby={titleId}>
+        <div className={styles.photo}>
+          <img className={styles.image} src={result.image_url} alt={result.title} loading="lazy" />
+        </div>
+        {/* Written on the frame: what you need to compare photos at a glance. */}
+        <div className={styles.caption}>
+          <h3 id={titleId} className={styles.title}>
+            {result.title}
+          </h3>
+          <p className={styles.meta}>
+            <span className={styles.price} data-missing={result.price === null || undefined}>
+              {result.price === null ? 'Price unavailable' : usd.format(result.price)}
+            </span>
+            <span className={styles.score}>
+              <span className={styles.scoreLabel}>Match</span>
+              <span className={styles.scoreNumber}>
+                {score}
+                <span className="visually-hidden"> out of 100</span>
+              </span>
+            </span>
+          </p>
+        </div>
+        <div className={styles.details}>
           <span className={styles.source} data-source={result.source}>
             {SOURCE_LABELS[result.source]}
           </span>
-          <h3 className={styles.title}>{result.title}</h3>
-          <p className={styles.price} data-missing={result.price === null || undefined}>
-            {result.price === null ? 'Price unavailable' : usd.format(result.price)}
-          </p>
-          <div className={styles.score}>
-            <span className={styles.scoreLabel}>Match</span>
-            <span className={styles.bar} aria-hidden="true">
-              <span style={{ width: `${Math.min(100, Math.max(0, score))}%` }} />
-            </span>
-            <span className={styles.scoreNumber}>
-              {score}
-              <span className="visually-hidden"> out of 100</span>
-            </span>
-          </div>
           {result.listing_url && (
             <a
               className={styles.link}
@@ -66,7 +73,9 @@ function ResultCard({ result }: { result: SearchResult }) {
   );
 }
 
-/** Up to 10 ranked listings, plus loading, empty, and error states (S2-7). */
+/**
+ * Up to 10 ranked listings as a polaroid board (S3-5), plus loading, empty, and error states (S2-7).
+ */
 export function ResultsGrid({ state, onRetry }: ResultsGridProps) {
   const titleId = useId();
   const count = state.status === 'success' ? state.results.length : 0;
@@ -92,9 +101,9 @@ export function ResultsGrid({ state, onRetry }: ResultsGridProps) {
         <ul className={styles.grid} aria-hidden="true" data-testid="results-skeleton">
           {Array.from({ length: SKELETON_COUNT }, (_, i) => (
             <li key={i} className={styles.item}>
-              <div className={`${styles.card} ${styles.skeleton}`}>
-                <div className={styles.image} />
-                <div className={styles.body}>
+              <div className={`${styles.polaroid} ${styles.skeleton}`}>
+                <div className={styles.photo} />
+                <div className={styles.caption}>
                   <span className={styles.line} />
                   <span className={styles.line} data-short />
                 </div>
