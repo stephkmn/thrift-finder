@@ -7,3 +7,33 @@ image,category,color,fabric,fit,others
 ../data/eval/own/jacket1-hung.JPG,windbreaker,pink,polyester,regular fit,hood;zipper
 ../data/eval/own/shacket1-flat.JPG,shacket,red,cotton,regular fit,plaid;buttons;distressed
 ../data/eval/own/shacket2-hung.JPG,shacket,navy,cotton,regular fit,plaid;buttons;patches
+../data/eval/dataset/images/secondhand-000275.jpg,shacket,navy,cotton,regular fit,buttons
+../data/eval/dataset/images/secondhand-000145.jpg,blazer,black,,regular fit,buttons
+../data/eval/dataset/images/secondhand-000368.jpg,puffer jacket,navy,polyester,regular fit,hood;zipper;quilted
+../data/eval/dataset/images/secondhand-000422.jpg,blazer,gray,wool,regular fit,buttons;plaid
+../data/eval/dataset/images/secondhand-000431.jpg,blazer,blue,wool,regular fit,buttons;striped
+../data/eval/dataset/images/secondhand-000675.jpg,trucker jacket,blue,denim,regular fit,buttons;patches;distressed
+../data/eval/dataset/images/secondhand-000750.jpg,blazer,black,polyester,slim fit,none
+../data/eval/dataset/images/secondhand-000766.jpg,trucker jacket,blue,denim,regular fit,buttons;patches
+../data/eval/dataset/images/secondhand-000845.jpg,vest,red,knit,regular fit,striped
+../data/eval/dataset/images/secondhand-001006.jpg,jacket,brown,leather,regular fit,zipper
+../data/eval/dataset/images/secondhand-001308.jpg,jacket,gray,cotton,regular fit,zipper;buttons
+../data/eval/dataset/images/secondhand-001348.jpg,fleece jacket,black,fleece,regular fit,zipper
+../data/eval/dataset/images/secondhand-001388.jpg,coat,gray,polyester,regular fit,zipper
+../data/eval/dataset/images/secondhand-001514.jpg,coat,navy,,regular fit,buttons;plaid
+../data/eval/dataset/images/secondhand-001660.jpg,jacket,blue,polyester,slim fit,buttons;color-block
+../data/eval/dataset/images/secondhand-001690.jpg,raincoat,black,polyester,regular fit,hood;buttons
+../data/eval/dataset/images/secondhand-001815.jpg,vest,black,knit,regular fit,striped
+../data/eval/dataset/images/secondhand-001816.jpg,vest,gray,knit,regular fit,none
+../data/eval/dataset/images/secondhand-001880.jpg,parka,white,nylon,longline,hood;belt;zipper
+../data/eval/dataset/images/secondhand-002064.jpg,blazer,black,velvet,cropped,none
+../data/eval/dataset/images/secondhand-002152.jpg,blazer,black,polyester,regular fit,buttons
+../data/eval/dataset/images/secondhand-002161.jpg,puffer jacket,tan,polyester,regular fit,buttons;quilted
+../data/eval/dataset/images/secondhand-002239.jpg,vest,red,cotton,,buttons
+../data/eval/dataset/images/secondhand-002173.jpg,blazer,black,cotton,regular fit,buttons
+../data/eval/dataset/images/secondhand-002517.jpg,coat,olive,cotton,regular fit,fur trim;buttons;double-breasted
+../data/eval/dataset/images/secondhand-002746.jpg,parka,cream,polyester,regular fit,hood;buttons;zipper
+../data/eval/dataset/images/secondhand-002874.jpg,vest,green,cotton,regular fit,zipper
+../data/eval/dataset/images/secondhand-003012.jpg,jacket,tan,suede,regular fit,zipper
+../data/eval/dataset/images/secondhand-003298.jpg,puffer jacket,cream,nylon,longline,hood;zipper;buttons;quilted
+../data/eval/dataset/images/secondhand-003372.jpg,blazer,navy,cotton,regular fit,buttons
