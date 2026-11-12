@@ -49,7 +49,7 @@ describe('ResultsGrid', () => {
     render(<ResultsGrid state={{ status: 'success', results: [ebay, local] }} onRetry={vi.fn()} />);
     const item = within(card(local.title));
 
-    expect(item.getByText('Price unavailable')).toBeInTheDocument();
+    expect(item.getByText('No price')).toBeInTheDocument();
     expect(item.getByText('Archive (not for sale)')).toBeInTheDocument();
     expect(item.getByText('40')).toBeInTheDocument();
     expect(item.queryByRole('link')).not.toBeInTheDocument();

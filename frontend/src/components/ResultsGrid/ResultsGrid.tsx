@@ -62,7 +62,7 @@ function ResultCard({ result, onOpenDetails }: ResultCardProps) {
           </h3>
           <p className={styles.meta}>
             <span className={styles.price} data-missing={result.price === null || undefined}>
-              {result.price === null ? 'Price unavailable' : usd.format(result.price)}
+              {result.price === null ? 'No price' : usd.format(result.price)}
             </span>
             <span className={styles.score}>
               <span className={styles.scoreLabel}>Match</span>

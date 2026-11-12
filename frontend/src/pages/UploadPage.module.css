@@ -107,16 +107,22 @@
   background: var(--color-bg);
 }
 
-/* After extract: upload summary on top, then the editor beside the results. */
+/* After extract. Narrow screens: upload summary, editor, then results, stacked.
+   Wide screens: the polaroid board fills the left; the summary and editor form a sidebar on the
+   right, and both columns start on the same line. */
 .session {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-6);
 }
 
-.workspace {
+.sidebar {
+  /* The upload summary lays itself out by this column's width, not the window's. */
+  container-type: inline-size;
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-7);
+  align-content: start;
+  gap: var(--space-5);
+  min-width: 0;
 }
 
 .update {
@@ -146,10 +152,17 @@
   color: var(--color-text-muted);
 }
 
-@media (min-width: 52rem) {
-  .workspace {
-    grid-template-columns: minmax(17rem, 20rem) minmax(0, 1fr);
-    column-gap: var(--space-6);
+@media (min-width: 60rem) {
+  .session {
+    grid-template-columns: minmax(0, 1fr) clamp(21rem, 26vw, 24rem);
+    column-gap: clamp(var(--space-6), 3vw, var(--space-7));
     align-items: start;
+  }
+
+  /* The sidebar comes first in the page (summary, then editor, then results) but sits on the
+     right; the results fill the free cell on the left. */
+  .sidebar {
+    grid-column: 2;
+    grid-row: 1;
   }
 }

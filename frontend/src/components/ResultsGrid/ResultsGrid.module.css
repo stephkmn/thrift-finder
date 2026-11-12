@@ -1,4 +1,6 @@
 .results {
+  /* The board picks its column count from its own width. */
+  container-type: inline-size;
   min-width: 0;
 }
 
@@ -26,27 +28,43 @@
   list-style: none;
 }
 
-/* Each photo is pinned at a slightly different angle. The pattern repeats every 5 cards,
-   so neighbors never share a tilt in a 2-, 3-, or 4-column board. */
+/* Beside the sidebar on a laptop or desktop: 5 across, so the top 10 is two rows. */
+@container (min-width: 46rem) {
+  .grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+/* Each photo is pinned at a slightly different angle. The pattern repeats every 7 cards,
+   so no photo shares a tilt with its neighbor on either side or above it in a 2- to
+   6-column board. */
 .item {
   --tilt: -1.5deg;
   min-width: 0;
 }
 
-.item:nth-child(5n + 2) {
+.item:nth-child(7n + 2) {
   --tilt: 1.25deg;
 }
 
-.item:nth-child(5n + 3) {
+.item:nth-child(7n + 3) {
   --tilt: -0.75deg;
 }
 
-.item:nth-child(5n + 4) {
+.item:nth-child(7n + 4) {
   --tilt: 1.75deg;
 }
 
-.item:nth-child(5n + 5) {
+.item:nth-child(7n + 5) {
   --tilt: -1deg;
+}
+
+.item:nth-child(7n + 6) {
+  --tilt: 0.75deg;
+}
+
+.item:nth-child(7n + 7) {
+  --tilt: -1.25deg;
 }
 
 /* White frame with a deeper bottom edge, like an instant photo. */
