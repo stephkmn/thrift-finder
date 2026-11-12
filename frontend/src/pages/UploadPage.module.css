@@ -121,7 +121,7 @@
   container-type: inline-size;
   display: grid;
   align-content: start;
-  gap: var(--space-5);
+  gap: var(--space-4);
   min-width: 0;
 }
 
