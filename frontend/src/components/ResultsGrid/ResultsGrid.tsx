@@ -49,9 +49,17 @@ function ResultCard({ result }: { result: SearchResult }) {
             </span>
           </p>
         </div>
+        {/* With a mouse, these sit over the blurred photo on hover or keyboard focus.
+            Touch screens have no hover, so there they stay under the caption. */}
         <div className={styles.details}>
           <span className={styles.source} data-source={result.source}>
             {SOURCE_LABELS[result.source]}
+          </span>
+          <span className={styles.meter} aria-hidden="true">
+            <span className={styles.meterLabel}>Match</span>
+            <span className={styles.bar}>
+              <span style={{ width: `${Math.min(100, Math.max(0, score))}%` }} />
+            </span>
           </span>
           {result.listing_url && (
             <a

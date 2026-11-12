@@ -55,8 +55,12 @@
   --shadow-lifted: 0 2px 4px rgb(15 34 64 / 0.1), 0 18px 30px -12px rgb(15 34 64 / 0.38);
 
   position: relative;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-areas:
+    'photo'
+    'caption'
+    'details';
+  grid-template-rows: auto 1fr auto;
   height: 100%;
   padding: var(--space-2) var(--space-2) var(--space-3);
   border: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
@@ -93,6 +97,7 @@
 }
 
 .photo {
+  grid-area: photo;
   position: relative;
   aspect-ratio: 4 / 5;
   overflow: hidden;
@@ -106,8 +111,8 @@
 }
 
 .caption {
+  grid-area: caption;
   display: flex;
-  flex: 1;
   flex-direction: column;
   gap: var(--space-1);
   padding: var(--space-3) var(--space-1) 0;
@@ -161,6 +166,7 @@
 }
 
 .details {
+  grid-area: details;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -209,6 +215,94 @@
   stroke-width: 1.5;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+
+/* The match bar only appears in the hover overlay; the frame already shows the number. */
+.meter {
+  display: none;
+}
+
+.meterLabel {
+  font-size: var(--text-xs);
+}
+
+.bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.35);
+  overflow: hidden;
+}
+
+.bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #ffffff;
+}
+
+/* Hover to blur: with a mouse, the details move over the photo and appear on hover or focus. */
+@media (hover: hover) and (pointer: fine) {
+  .image {
+    transition:
+      filter 220ms var(--ease-out),
+      transform 220ms var(--ease-out);
+  }
+
+  .polaroid:hover .image,
+  .polaroid:focus-within .image {
+    filter: blur(6px) saturate(0.85);
+    /* Scale up so the blur doesn't leave a soft edge inside the frame. */
+    transform: scale(1.08);
+  }
+
+  .details {
+    grid-area: photo;
+    z-index: 1;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-end;
+    gap: var(--space-2);
+    padding: var(--space-3);
+    background: linear-gradient(
+      to top,
+      rgb(15 34 64 / 0.82),
+      rgb(15 34 64 / 0.35) 60%,
+      rgb(15 34 64 / 0.1)
+    );
+    color: #ffffff;
+    opacity: 0;
+    transition: opacity 180ms var(--ease-out);
+    pointer-events: none;
+  }
+
+  .polaroid:hover .details,
+  .polaroid:focus-within .details {
+    opacity: 1;
+  }
+
+  .details .source,
+  .details .source[data-source='local'] {
+    background: rgb(255 255 255 / 0.92);
+    color: var(--color-text);
+  }
+
+  .meter {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    width: 100%;
+  }
+
+  .details .link,
+  .details .link:hover {
+    color: #ffffff;
+    pointer-events: auto;
+  }
+
+  .details .link:hover {
+    text-decoration-thickness: 2px;
+  }
 }
 
 .skeleton .photo,
