@@ -70,7 +70,20 @@ The S1-11 evaluation plan reports a pool of **212 eligible test-split outerwear 
 images. The importer may warn that fewer than 300 were saved. Record the actual count
 from your run. The separate 30-photo, seed-451 selection is a **later sampling step**, owned
 by Member D with Member A according to the sprint plan; this importer does not select
-those 30 or generate the evaluation CSV files.
+those 30 or generate the evaluation CSV files. That step is `scripts/build_eval_set.py`,
+which reads `data/eval/dataset/listings.jsonl` and downloads nothing itself.
+
+#### Evaluation pool ingestion results — November 12, 2026
+
+- Command: `python scripts/ingest.py --split test --limit 300`
+- Source revision: main (not yet pinned)
+- Total test-split rows scanned: 3,390
+- Outerwear records found: 212
+- Invalid images: 0
+- Exact duplicate images skipped: 1 (a Blazer)
+- Total records saved: **211** (Jacket 114, Blazer 40, Vest 37, Winter Jacket 15, Rain Jacket 3,
+  Denim Jacket 2)
+- The "fewer than the requested count" warning is expected: 211 is the whole eligible pool.
 
 The `source_index` in each JSONL record is the original row position within its split,
 which the sampling script can use to identify the test photo. All evaluation photos are

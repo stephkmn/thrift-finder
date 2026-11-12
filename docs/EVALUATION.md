@@ -109,14 +109,23 @@ and for the progress report's results.
 
 ### Dataset queries
 
-- **Pool: 212 `test`-split photos** whose type passes the same outerwear rule as the search index
-  (`is_outerwear` in `backend/app/data/preprocess.py`): Jacket 114, Blazer 41, Vest 37, Winter Jacket 15,
-  Rain Jacket 3, Denim Jacket 2 (dataset statistics, Nov 10, 2026). The 67 `test` photos typed only
+- **Pool: 211 `test`-split photos.** 212 pass the same outerwear rule as the search index
+  (`is_outerwear` in `backend/app/data/preprocess.py`); the importer skipped one exact duplicate image
+  (a Blazer), leaving Jacket 114, Blazer 40, Vest 37, Winter Jacket 15, Rain Jacket 3, Denim Jacket 2
+  (`scripts/ingest.py --split test`, Nov 12, 2026; see `docs/DATA.md`). The 67 `test` photos typed only
   "Outerwear" are left out, as they are from the index.
 - **Never in the search corpus:** the index is built from the `train` split only.
 - **Draw:** 30 photos at random with seed 451, stratified by type in proportion to the pool
   (largest-remainder rounding): Jacket 16, Blazer 6, Vest 5, Winter Jacket 2, Rain Jacket 1. The seed and
   each photo's row index are recorded in `eval/queries.csv`, so anyone can rebuild the set.
+- **Two steps.** `python scripts/ingest.py --split test --limit 300` downloads the pool into
+  `data/eval/dataset/` (gitignored), dropping exact duplicates. Then `python scripts/build_eval_set.py`
+  (logic in `backend/app/data/eval_set.py`) reads that pool's `listings.jsonl`, draws the 30, and
+  appends their rows to the CSVs below with labels pre-filled. It downloads nothing. Re-running it
+  never changes rows already in those files, so filled-in labels and edits are safe.
+- **Drawn rows** (test-split row indices, seed 451): 275, 346, 368, 422, 431, 675, 750, 766, 845,
+  1006, 1308, 1348, 1388, 1514, 1660, 1690, 1815, 1816, 1880, 2064, 2152, 2161, 2239, 2409, 2517,
+  2746, 2874, 3012, 3298, 3372.
 
 ### Intended edits
 
@@ -138,12 +147,17 @@ Member D assigns each photo's edit. The new value must be in `backend/app/ml/att
 - **`others` features:** the dataset has none, so Member D labels all 38 query photos by hand. Only
   the 38 query photos are labeled; search results are not.
 
-### Files (planned)
+### Files
 
 | File | Contents |
 |---|---|
-| `eval/queries.csv` | `query_id`, `source` (`dataset` / `own`), `split`, `row_index` (dataset), `file` (own, relative to `data/eval/own/`), `edit_attribute`, `edit_from`, `edit_to`, `seed` |
+| `eval/queries.csv` | `query_id` (`ds-01`…, `own-01`…), `source` (`dataset` / `own`), `split`, `row_index` (dataset), `file` (relative to `data/eval/dataset/`, e.g. `images/secondhand-000275.jpg`, or to `data/eval/own/`), `edit_attribute`, `edit_from`, `edit_to`, `seed` |
 | `eval/labels.csv` | The format `scripts/zero_shot_accuracy.py` reads: `image`, `category`, `color`, `fabric`, `fit`, `others` |
+| `eval/dataset_source.csv` | The dataset's own fields for each dataset query (`type`, `colors`, `material`, `cut`, `pattern`), for reference while labeling |
+
+Pre-filled dataset labels are left blank when they are ambiguous or outside the vocabulary
+(several colors, a type like "Winter Jacket", an unknown material); Member D fills those in
+and checks the rest against the photo.
 
 ### What it measures
 
