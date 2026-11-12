@@ -56,6 +56,42 @@ describe('ResultsGrid', () => {
     expect(screen.getAllByRole('link')).toHaveLength(1);
   });
 
+  it('opens the details page when a photo is clicked', async () => {
+    const onOpenDetails = vi.fn();
+    render(
+      <ResultsGrid
+        state={{ status: 'success', results: [ebay, local] }}
+        onRetry={vi.fn()}
+        onOpenDetails={onOpenDetails}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: `See details: ${local.title}` }));
+    expect(onOpenDetails).toHaveBeenCalledExactlyOnceWith(local.id);
+  });
+
+  it('opens the details page from the keyboard', async () => {
+    const onOpenDetails = vi.fn();
+    render(
+      <ResultsGrid
+        state={{ status: 'success', results: [ebay] }}
+        onRetry={vi.fn()}
+        onOpenDetails={onOpenDetails}
+      />,
+    );
+
+    await userEvent.tab();
+    expect(screen.getByRole('button', { name: `See details: ${ebay.title}` })).toHaveFocus();
+    await userEvent.keyboard('{Enter}');
+    expect(onOpenDetails).toHaveBeenCalledExactlyOnceWith(ebay.id);
+  });
+
+  it('leaves photos unclickable until there is a details page to open', () => {
+    render(<ResultsGrid state={{ status: 'success', results: [ebay, local] }} onRetry={vi.fn()} />);
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+    expect(screen.queryByText('Click for details')).not.toBeInTheDocument();
+  });
+
   it('shows skeleton cards and announces progress while loading', () => {
     render(<ResultsGrid state={{ status: 'loading' }} onRetry={vi.fn()} />);
     expect(screen.getByTestId('results-skeleton')).toBeInTheDocument();

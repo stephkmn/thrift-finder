@@ -11,6 +11,11 @@ interface ResultsGridProps {
   state: ResultsState;
   /** Resends the same search after an error. */
   onRetry: () => void;
+  /**
+   * Opens the details page for a listing (S3-6). Without it, the photos are not clickable:
+   * the details page doesn't exist yet, and a button that does nothing would be a trap.
+   */
+  onOpenDetails?: (id: string) => void;
 }
 
 const SKELETON_COUNT = 6;
@@ -22,14 +27,33 @@ const SOURCE_LABELS: Record<SearchResult['source'], string> = {
   local: 'Archive (not for sale)',
 };
 
-function ResultCard({ result }: { result: SearchResult }) {
+interface ResultCardProps {
+  result: SearchResult;
+  onOpenDetails?: (id: string) => void;
+}
+
+function ResultCard({ result, onOpenDetails }: ResultCardProps) {
   const titleId = useId();
   const score = Math.round(result.match_score);
+  const image = (
+    <img className={styles.image} src={result.image_url} alt={result.title} loading="lazy" />
+  );
   return (
     <li className={styles.item}>
       <article className={styles.polaroid} aria-labelledby={titleId}>
         <div className={styles.photo}>
-          <img className={styles.image} src={result.image_url} alt={result.title} loading="lazy" />
+          {onOpenDetails ? (
+            <button
+              type="button"
+              className={styles.photoButton}
+              aria-label={`See details: ${result.title}`}
+              onClick={() => onOpenDetails(result.id)}
+            >
+              {image}
+            </button>
+          ) : (
+            image
+          )}
         </div>
         {/* Written on the frame: what you need to compare photos at a glance. */}
         <div className={styles.caption}>
@@ -52,6 +76,11 @@ function ResultCard({ result }: { result: SearchResult }) {
         {/* With a mouse, these sit over the blurred photo on hover or keyboard focus.
             Touch screens have no hover, so there they stay under the caption. */}
         <div className={styles.details}>
+          {onOpenDetails && (
+            <span className={styles.hint} aria-hidden="true">
+              Click for details
+            </span>
+          )}
           <span className={styles.source} data-source={result.source}>
             {SOURCE_LABELS[result.source]}
           </span>
@@ -84,7 +113,7 @@ function ResultCard({ result }: { result: SearchResult }) {
 /**
  * Up to 10 ranked listings as a polaroid board (S3-5), plus loading, empty, and error states (S2-7).
  */
-export function ResultsGrid({ state, onRetry }: ResultsGridProps) {
+export function ResultsGrid({ state, onRetry, onOpenDetails }: ResultsGridProps) {
   const titleId = useId();
   const count = state.status === 'success' ? state.results.length : 0;
 
@@ -156,7 +185,7 @@ export function ResultsGrid({ state, onRetry }: ResultsGridProps) {
       {state.status === 'success' && count > 0 && (
         <ul className={styles.grid}>
           {state.results.map((result) => (
-            <ResultCard key={result.id} result={result} />
+            <ResultCard key={result.id} result={result} onOpenDetails={onOpenDetails} />
           ))}
         </ul>
       )}
