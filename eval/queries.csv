@@ -1,0 +1,9 @@
+query_id,source,split,row_index,file,edit_attribute,edit_from,edit_to,seed
+own-01,own,,,jacket1-flat.JPG,others,hood,none
+own-02,own,,,jacket1-hung.JPG,color,pink,black
+own-03,own,,,shacket1-hung.JPG,color,red,green
+own-04,own,,,shacket1-flat.JPG,others,distressed,none
+own-05,own,,,shacket2-flat.JPG,color,navy,brown
+own-06,own,,,shacket2-hung.JPG,others,patches,none
+own-07,own,,,jacket2-flat.JPG,others,fur trim,none
+own-08,own,,,jacket2-hung.JPG,color,tan,black
