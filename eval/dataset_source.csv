@@ -1,0 +1,31 @@
+query_id,row_index,type,colors,material,cut,pattern
+ds-01,275,Jacket,Blue; Black,100% bomull,['C-collar'],Other
+ds-02,145,Blazer,Black,100% Viscose,['Regular'],
+ds-03,368,Winter Jacket,Blue,100% polyester,['Regular'],
+ds-04,422,Jacket,Black; Beige; Grey; Multicolor,100% wool,['Regular'],Checkered print
+ds-05,431,Jacket,Blue; Beige,"73% wool, 27% nylon",['Regular'],Striped
+ds-06,675,Jacket,Blue; Black; Yellow; Multicolor,56% cotton 44% viscose,['Regular'],Other
+ds-07,750,Blazer,Black; Grey,80% polyester 20% elastan,['V-collar'],Other
+ds-08,766,Jacket,Blue; White; Brown,100% bomull,['C-collar'],Embroidered
+ds-09,845,Vest,Beige; Brown; Red,100% Silk,['Regular'],Striped
+ds-10,1006,Jacket,Brown; Black,81% polyester 19% elastan,['C-collar'],Other
+ds-11,1308,Jacket,Green; Pink; Blue; Red; Brown,100% bomull,['V-collar'],Other
+ds-12,1348,Jacket,Black; Brown,100% polyster,['Turtle neck'],Logo print
+ds-13,1388,Jacket,Grey; Black,86% polyester 14% ull,['Turtle neck'],Other
+ds-14,1514,Jacket,Purple; Grey; Green; Black,100% silke,['Regular'],Checkered print
+ds-15,1660,Jacket,Blue; White; Grey,100% polyester,['Tight'],Glitter
+ds-16,1690,Rain Jacket,Black; White,100% polyester,['Turtle neck'],Other
+ds-17,1815,Vest,Black; Red; White,63% akryl 37% nylon,['V-collar'],Striped
+ds-18,1816,Vest,Grey,57% akryl 43% bomull,['V-collar'],Other
+ds-19,1880,Jacket,White,73% nylon 27% polyester,['C-collar'],Other
+ds-20,2064,Blazer,Black,100% Cotton,['Cropped'],Metallic
+ds-21,2152,Blazer,Black,100% Polyester,['Regular'],
+ds-22,2161,Winter Jacket,Beige,100% Polyester,['Regular'],
+ds-23,2239,Vest,Red,100% bomull,['C-collar'],Other
+ds-24,2173,Blazer,Black,55% Cotton 44% Polyester,['Regular'],
+ds-25,2517,Jacket,Green; Brown,69% bomull 31% viskos,['C-collar'],Logo print
+ds-26,2746,Jacket,Beige; Brown,67% polyester 33% bomull,['Turtle neck'],Other
+ds-27,2874,Vest,Green,100% cotton,['Regular'],
+ds-28,3012,Jacket,Brown; Grey,100% polyester,['C-collar'],Other
+ds-29,3298,Jacket,Beige,72% nylon 28% polyester,['Turtle neck'],Other
+ds-30,3372,Blazer,Blue,100% cotton,['Regular'],

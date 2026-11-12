@@ -1,0 +1,6 @@
+query_id,row_index,reason
+ds-02,346,"Not outerwear: a lace blouse, typed ""Blazer"" by the dataset"
+ds-24,2409,"Not outerwear: a striped T-shirt, typed ""Blazer"" by the dataset"
+ds-24,498,"Not outerwear: jeans, typed ""Blazer"" (rejected replacement)"
+ds-24,1936,"Not outerwear: trousers, typed ""Blazer"" (rejected replacement)"
+ds-24,2001,"Not outerwear: a floral top, typed ""Blazer"" (rejected replacement)"

@@ -93,7 +93,7 @@ thrift-finder/
 │   ├── AI_MODEL.md            # (planned S3-8) model, prompts, scoring
 │   ├── DATA.md                # (planned S3-9) data sources and license
 │   └── EVALUATION.md          # (planned S3-2) preliminary results
-├── scripts/                   # (planned S4) ingest, build_embeddings, reproduce_sample, evaluate
+├── scripts/                   # ingest, build_embeddings, build_eval_set; (planned) reproduce_sample, evaluate
 ├── samples/                   # (planned S4) 3 photos of Member D's own jackets + expected_output.json
 ├── eval/                      # (planned S1-11) evaluation labels; see docs/EVALUATION.md
 ├── data/                      # gitignored except small README + sample set
