@@ -25,7 +25,10 @@ router = APIRouter()
 MAX_IMAGE_BYTES = 10 * 1024 * 1024
 ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp"}
 # The format Pillow actually finds in the bytes; the declared content type is only a claim.
-ALLOWED_IMAGE_FORMATS = {"JPEG", "PNG", "WEBP"}
+# "MPO" is a JPEG with extra embedded images (depth or HDR data): iPhones save their
+# "Most Compatible" photos this way. Pillow decodes the main image, the same as any JPEG.
+# HEIC (the iPhone default) stays unsupported; the frontend asks users to export as JPEG.
+ALLOWED_IMAGE_FORMATS = {"JPEG", "MPO", "PNG", "WEBP"}
 # The 10 MiB cap is on the file, not the pixels: a small PNG can decode to hundreds of
 # megapixels. CLIP resizes to 224 px, so anything near this many pixels is a mistake or abuse.
 MAX_IMAGE_PIXELS = 40_000_000

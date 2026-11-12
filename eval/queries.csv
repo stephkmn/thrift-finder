@@ -1,0 +1,39 @@
+query_id,source,split,row_index,file,edit_attribute,edit_from,edit_to,seed
+own-01,own,,,jacket1-flat.JPG,others,hood,none
+own-02,own,,,jacket1-hung.JPG,color,pink,black
+own-03,own,,,shacket1-hung.JPG,color,red,green
+own-04,own,,,shacket1-flat.JPG,others,distressed,none
+own-05,own,,,shacket2-flat.JPG,color,navy,brown
+own-06,own,,,shacket2-hung.JPG,others,patches,none
+own-07,own,,,jacket2-flat.JPG,others,fur trim,none
+own-08,own,,,jacket2-hung.JPG,color,tan,black
+ds-01,dataset,test,275,images/secondhand-000275.jpg,color,navy,black,451
+ds-02,dataset,test,145,images/secondhand-000145.jpg,color,black,brown,451
+ds-03,dataset,test,368,images/secondhand-000368.jpg,others,hood,none,451
+ds-04,dataset,test,422,images/secondhand-000422.jpg,others,plaid,none,451
+ds-05,dataset,test,431,images/secondhand-000431.jpg,color,blue,gray,451
+ds-06,dataset,test,675,images/secondhand-000675.jpg,color,blue,black,451
+ds-07,dataset,test,750,images/secondhand-000750.jpg,color,black,red,451
+ds-08,dataset,test,766,images/secondhand-000766.jpg,color,blue,white,451
+ds-09,dataset,test,845,images/secondhand-000845.jpg,color,red,navy,451
+ds-10,dataset,test,1006,images/secondhand-001006.jpg,fabric,leather,suede,451
+ds-11,dataset,test,1308,images/secondhand-001308.jpg,color,gray,olive,451
+ds-12,dataset,test,1348,images/secondhand-001348.jpg,color,black,gray,451
+ds-13,dataset,test,1388,images/secondhand-001388.jpg,fabric,polyester,wool,451
+ds-14,dataset,test,1514,images/secondhand-001514.jpg,color,navy,brown,451
+ds-15,dataset,test,1660,images/secondhand-001660.jpg,color,blue,pink,451
+ds-16,dataset,test,1690,images/secondhand-001690.jpg,others,hood,none,451
+ds-17,dataset,test,1815,images/secondhand-001815.jpg,color,black,navy,451
+ds-18,dataset,test,1816,images/secondhand-001816.jpg,others,none,striped,451
+ds-19,dataset,test,1880,images/secondhand-001880.jpg,color,white,black,451
+ds-20,dataset,test,2064,images/secondhand-002064.jpg,fit,cropped,regular fit,451
+ds-21,dataset,test,2152,images/secondhand-002152.jpg,color,black,navy,451
+ds-22,dataset,test,2161,images/secondhand-002161.jpg,color,tan,black,451
+ds-23,dataset,test,2239,images/secondhand-002239.jpg,color,red,blue,451
+ds-24,dataset,test,2173,images/secondhand-002173.jpg,color,black,tan,451
+ds-25,dataset,test,2517,images/secondhand-002517.jpg,others,fur trim,none,451
+ds-26,dataset,test,2746,images/secondhand-002746.jpg,color,cream,olive,451
+ds-27,dataset,test,2874,images/secondhand-002874.jpg,color,green,black,451
+ds-28,dataset,test,3012,images/secondhand-003012.jpg,fabric,suede,leather,451
+ds-29,dataset,test,3298,images/secondhand-003298.jpg,fit,longline,cropped,451
+ds-30,dataset,test,3372,images/secondhand-003372.jpg,color,navy,gray,451

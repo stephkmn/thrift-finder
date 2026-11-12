@@ -3,6 +3,7 @@
 Run from repository root after: pip install -e '.[dev,data]'
     python scripts/ingest.py --limit 25
     python scripts/ingest.py --limit 500
+    python scripts/ingest.py --split test --limit 300
 
 This is a licensed archival dataset, not live eBay inventory. Images and
 records are saved locally and intentionally excluded from Git.
@@ -43,18 +44,20 @@ def to_pil(value: Any) -> Image.Image:
 
 
 def ingest(
-    *, limit: int, max_scan: int, output: Path, image_dir: Path, revision: str
+    *, limit: int, max_scan: int, output: Path, image_dir: Path, revision: str, split: str = "train"
 ) -> dict[str, int]:
     """Stream dataset; keep unique outerwear photos and normalize metadata."""
     from datasets import load_dataset
 
     if limit <= 0 or max_scan <= 0:
         raise ValueError("--limit and --max-scan must be positive")
+    if split not in {"train", "test"}:
+        raise ValueError("--split must be train or test")
 
     output.parent.mkdir(parents=True, exist_ok=True)
     image_dir.mkdir(parents=True, exist_ok=True)
-    print(f"Loading {DATASET_ID}, revision={revision}, split=train (streaming)...")
-    ds = load_dataset(DATASET_ID, split="train", streaming=True, revision=revision)
+    print(f"Loading {DATASET_ID}, revision={revision}, split={split} (streaming)...")
+    ds = load_dataset(DATASET_ID, split=split, streaming=True, revision=revision)
     counts = {"scanned": 0, "outerwear": 0, "invalid_images": 0, "duplicates": 0, "saved": 0}
     seen_hashes: set[str] = set()
     staging_path = output.with_suffix(".jsonl.tmp")
@@ -116,17 +119,24 @@ def ingest(
 def main() -> None:
     parser = argparse.ArgumentParser(description="Ingest licensed secondhand outerwear data")
     parser.add_argument("--limit", type=int, default=500)
+    parser.add_argument("--split", choices=("train", "test"), default="train")
     parser.add_argument("--max-scan", type=int, default=28_248)
     parser.add_argument(
         "--revision", default="main", help="Pin a Hugging Face commit for reproducibility"
     )
     args = parser.parse_args()
+    output_dir = (
+        PROJECT_ROOT / "data"
+        if args.split == "train"
+        else PROJECT_ROOT / "data" / "eval" / "dataset"
+    )
     ingest(
         limit=args.limit,
         max_scan=args.max_scan,
-        output=PROJECT_ROOT / "data" / "listings.jsonl",
-        image_dir=PROJECT_ROOT / "data" / "images",
+        output=output_dir / "listings.jsonl",
+        image_dir=output_dir / "images",
         revision=args.revision,
+        split=args.split,
     )
 
 
