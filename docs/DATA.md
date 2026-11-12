@@ -70,6 +70,43 @@ The ML Lead will generate and cache image/text embeddings separately using Fashi
 - Credentials must be stored only in environment variables / a local ignored `.env` file, never in Git.
 - Data limits, permissible retention and caching, and redistribution rules must be checked before saving retrieved listing data.
 
+
+### S1-1 — eBay Developer Access Status
+
+**Date:** November 11, 2026
+
+**Status:** Pending developer account approval
+
+#### Progress
+
+- Registered for the eBay Developers Program.
+- Received confirmation that the account is under review.
+- eBay states that approval takes at least one business day.
+- Sandbox and Production credentials are not yet available.
+- OAuth authentication and Browse API access have not been tested.
+
+#### Current Blocker
+
+The developer account is awaiting approval from eBay.
+API testing cannot proceed until account access is granted.
+
+#### Current Approach
+
+The prototype will continue using the licensed local
+secondhand clothing dataset with 500 indexed garments.
+
+This provides a reliable search dataset while live
+marketplace API access remains unverified.
+
+#### Next Steps
+
+1. Wait for eBay developer account approval.
+2. Obtain Sandbox credentials.
+3. Test OAuth authentication.
+4. Check Production Browse API eligibility.
+5. Update the documentation with actual test results.
+
+
 ## Privacy and evaluation
 
 - The ingestion script handles third-party licensed dataset images, not user uploads. Query images should be processed in memory and not permanently saved, per the Phase 1 promise.
