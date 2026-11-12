@@ -85,6 +85,16 @@ which reads `data/eval/dataset/listings.jsonl` and downloads nothing itself.
   Denim Jacket 2)
 - The "fewer than the requested count" warning is expected: 211 is the whole eligible pool.
 
+#### Known issue: garment types are sometimes wrong
+
+Building the S1-11 evaluation set found that the dataset's `type` label is unreliable for
+**"Blazer"**: of 11 test-split "Blazer" photos inspected, 5 were not outerwear (a lace blouse, a
+striped T-shirt, a floral top, jeans, trousers). The 24 inspected photos of the other outerwear
+types were all correct. The search index filters on the same label, so its listings typed "Blazer"
+(train split) likely include some non-outerwear, and a search can return them. Possible fixes: a quick
+visual check of the indexed "Blazer" listings, or dropping that type from the index until checked.
+The evaluation set handles it with `eval/excluded.csv` (see `docs/EVALUATION.md`).
+
 The `source_index` in each JSONL record is the original row position within its split,
 which the sampling script can use to identify the test photo. All evaluation photos are
 local, gitignored files; only permitted evaluation labels and code should be committed.

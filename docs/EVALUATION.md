@@ -126,6 +126,24 @@ and for the progress report's results.
 - **Drawn rows** (test-split row indices, seed 451): 275, 346, 368, 422, 431, 675, 750, 766, 845,
   1006, 1308, 1348, 1388, 1514, 1660, 1690, 1815, 1816, 1880, 2064, 2152, 2161, 2239, 2409, 2517,
   2746, 2874, 3012, 3298, 3372.
+- **Exclusions and replacements** (`eval/excluded.csv`): a drawn photo that turns out not to be
+  outerwear is excluded with its reason, and its slot (same `query_id`) is filled by the first row of
+  the same garment type in a separate seeded order (`replacement_order` in
+  `backend/app/data/eval_set.py`, seed 451), skipping drawn and excluded rows. Nobody picks
+  replacements by hand, the other rows and the per-type quotas are untouched, and a replacement that
+  is also unusable is excluded in turn. All five exclusions so far are dataset mislabels typed
+  "Blazer":
+
+  | Slot | Drawn row | Reason | Rejected replacements | Final row |
+  |---|---|---|---|---|
+  | `ds-02` | 346 | a lace blouse | — | 145 |
+  | `ds-24` | 2409 | a striped T-shirt | 498 (jeans), 1936 (trousers), 2001 (a floral top) | 2173 |
+
+  Final rows: 275, 145, 368, 422, 431, 675, 750, 766, 845, 1006, 1308, 1348, 1388, 1514, 1660, 1690,
+  1815, 1816, 1880, 2064, 2152, 2161, 2239, 2173, 2517, 2746, 2874, 3012, 3298, 3372.
+- **The dataset's "Blazer" type is unreliable:** of the 11 "Blazer" photos inspected (6 drawn plus 5
+  replacement candidates), 5 were not outerwear. All 24 drawn photos of the other types were correct.
+  See `docs/DATA.md` for what this means for the search index.
 
 ### Intended edits
 
@@ -154,6 +172,7 @@ Member D assigns each photo's edit. The new value must be in `backend/app/ml/att
 | `eval/queries.csv` | `query_id` (`ds-01`…, `own-01`…), `source` (`dataset` / `own`), `split`, `row_index` (dataset), `file` (relative to `data/eval/dataset/`, e.g. `images/secondhand-000275.jpg`, or to `data/eval/own/`), `edit_attribute`, `edit_from`, `edit_to`, `seed` |
 | `eval/labels.csv` | The format `scripts/zero_shot_accuracy.py` reads: `image`, `category`, `color`, `fabric`, `fit`, `others` |
 | `eval/dataset_source.csv` | The dataset's own fields for each dataset query (`type`, `colors`, `material`, `cut`, `pattern`), for reference while labeling |
+| `eval/excluded.csv` | Excluded rows: `query_id`, `row_index`, `reason` (written by hand; the script fills the slots) |
 
 Pre-filled dataset labels are left blank when they are ambiguous or outside the vocabulary
 (several colors, a type like "Winter Jacket", an unknown material); Member D fills those in

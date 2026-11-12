@@ -6,6 +6,9 @@ stratified by garment type, and adds rows to eval/queries.csv, eval/labels.csv, 
 eval/dataset_source.csv. Rows already in those files, including Member D's own photos and
 anything already labeled, are left alone. Nothing is downloaded.
 
+Photos listed in eval/excluded.csv (query_id, row_index, reason) are swapped in place for a
+same-type replacement from a separate seeded order; see backend/app/data/eval_set.py.
+
 Run from the repository root:
     python scripts/ingest.py --split test --limit 300   # once, to fetch the pool
     python scripts/build_eval_set.py
@@ -57,6 +60,15 @@ def main() -> None:
     for name, size in result.pool_sizes.items():
         print(f"  {name}: {size}")
     print(f"Drew {len(result.chosen)} with seed {args.seed}: test rows {result.chosen}")
+    for query_id, (old, new) in result.replaced.items():
+        print(f"Excluded {query_id} (row {old}); replaced by row {new}")
+    if result.unused_exclusions:
+        print(
+            "Excluded rows not in the draw (only skipped as replacements): "
+            f"{result.unused_exclusions}"
+        )
+    if result.swapped_rows:
+        print(f"Rows swapped in place for replacements: {result.swapped_rows}")
     for name, added in result.added.items():
         print(f"Rows added to eval/{'dataset_source' if name == 'source' else name}.csv: {added}")
 
@@ -68,7 +80,7 @@ def main() -> None:
         drawn = {int(r["source_index"]): r for r in listings}
         clashes = [
             drawn[row]["image_path"]
-            for row in result.chosen
+            for row in result.final
             if _sha256(PROJECT_ROOT / drawn[row]["image_path"]) in indexed
         ]
         if clashes:
