@@ -1,0 +1,9 @@
+image,category,color,fabric,fit,others
+../samples/jacket1-flat.JPG,windbreaker,pink,polyester,regular fit,hood;zipper
+../samples/shacket1-hung.JPG,shacket,red,cotton,regular fit,plaid;buttons;distressed
+../samples/shacket2-flat.JPG,shacket,navy,cotton,regular fit,plaid;buttons;patches
+../data/eval/own/jacket2-flat.JPG,bomber jacket,tan,polyester,regular fit,hood;fur trim;zipper
+../data/eval/own/jacket2-hung.JPG,bomber jacket,tan,polyester,regular fit,hood;fur trim;zipper
+../data/eval/own/jacket1-hung.JPG,windbreaker,pink,polyester,regular fit,hood;zipper
+../data/eval/own/shacket1-flat.JPG,shacket,red,cotton,regular fit,plaid;buttons;distressed
+../data/eval/own/shacket2-hung.JPG,shacket,navy,cotton,regular fit,plaid;buttons;patches
