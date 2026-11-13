@@ -41,7 +41,7 @@ def main() -> int:
         print("Price:", listing["price"], listing["currency"])
         print("Condition:", listing["condition"])
         print("Has image:", bool(listing["image_url"]))
-        print("Has eBay link:", bool(listing["listing_url"]))
+        print("eBay link:", listing["listing_url"])
     return 0
 
 
