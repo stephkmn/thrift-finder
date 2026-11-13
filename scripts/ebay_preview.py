@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import argparse
 import getpass
-import os
 
+from backend.app.config import get_settings
 from backend.app.data.ebay_client import EbayAPIError, EbayBrowseClient
 
 
@@ -22,8 +22,10 @@ def main() -> int:
         help="Also allow new listings (default: used only)",
     )
     args = parser.parse_args()
-    client_id = os.environ.get("EBAY_CLIENT_ID") or input("eBay App ID: ").strip()
-    client_secret = os.environ.get("EBAY_CLIENT_SECRET") or getpass.getpass(
+    settings = get_settings()
+
+    client_id = settings.ebay_client_id or input("eBay App ID: ").strip()
+    client_secret = settings.ebay_client_secret or getpass.getpass(
         "eBay Cert ID (hidden): "
     )
     try:
