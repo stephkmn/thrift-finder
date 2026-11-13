@@ -59,6 +59,11 @@ The script writes:
 
 Both paths should stay **gitignored**. The script prints counts of rows scanned, outerwear found, invalid images, duplicates, and saved garments. Optionally use `--revision <HF_COMMIT_SHA>` to pin a specific source version and record that revision in this document.
 
+### Search-result contract and remaining integration
+
+The `SearchResult` API schema supports `price: float | None`, `image_url: str`, `listing_url: str | None`, and `source: "ebay" | "local"`. This allows local archival items to have no verified sale price or purchase link.
+
+The local dataset contains no live purchase URLs or verified USD prices, so these fields must remain `null` when unavailable. Local image paths also need to be exposed through an appropriate backend image-serving route before they can be displayed in the frontend. **Do not fabricate eBay prices or purchase links.**
 ### Separate evaluation pool (`test` split)
 
 Run `python scripts/ingest.py --split test --limit 300` to import the **test split only**. This
@@ -111,49 +116,114 @@ FashionCLIP embedding/index generation is implemented separately in
 `scripts/build_embeddings.py` and `backend/app/ml/`. This ingestion pipeline
 provides photographs and metadata; it does not generate vectors itself.
 
-## Planned eBay API integration
+The schema also requires a `match_score` between 0 and 100. The standalone eBay client does not generate FashionCLIP similarity scores, so score generation and mapping must be coordinated with the Backend and ML Leads.
 
-- eBay Browse API, using developer authentication and permission appropriate to the target environment.
-- Status: not implemented in this data pipeline PR; exact access and allowed fields must be verified independently.
-- Credentials must be stored only in environment variables / a local ignored `.env` file, never in Git.
-- Data limits, permissible retention and caching, and redistribution rules must be checked before saving retrieved listing data.
+The ML pipeline generates and caches image/text embeddings separately using FashionCLIP. The ingestion pipeline produces local images and metadata, not similarity scores.
 
+## eBay API integration status
 
-### S1-1 — eBay Developer Access Status
+The eBay Browse API has been successfully tested in both Sandbox and Production environments.
 
-**Date:** November 11, 2026
+A reusable, read-only API client is implemented in `backend/app/data/ebay_client.py`, with a command-line preview in `scripts/ebay_preview.py`.
 
-**Status:** Pending developer account approval
+The client supports:
 
-#### Progress
+- OAuth 2.0 application authentication using environment-specific developer credentials.
+- Searching live eBay listings through the Browse API.
+- Filtering for used clothing with `conditions:{USED}`.
+- Extracting listing IDs, titles, prices, currencies, conditions, images, and eBay listing URLs.
+- Returning normalized listing information without persistent storage.
+- Controlled error handling for authentication, networking, and API response failures.
 
-- Registered for the eBay Developers Program.
-- Received confirmation that the account is under review.
-- eBay states that approval takes at least one business day.
-- Sandbox and Production credentials are not yet available.
-- OAuth authentication and Browse API access have not been tested.
+The client is currently a standalone integration prototype. **It has not yet been connected to the application's `/api/search` endpoint or frontend.** This integration must be coordinated with the Backend Lead.
 
-#### Current Blocker
+The licensed local dataset of 500 indexed garments remains the reliable search fallback.
 
-The developer account is awaiting approval from eBay.
-API testing cannot proceed until account access is granted.
+API credentials must be provided through environment variables or secure runtime prompts. Credentials, OAuth tokens, and eBay API responses must not be committed to Git or written to persistent storage.
 
-#### Current Approach
+## S1-1 — eBay Developer Access and Feasibility
 
-The prototype will continue using the licensed local
-secondhand clothing dataset with 500 indexed garments.
+**Last verified:** November 12, 2026
 
-This provides a reliable search dataset while live
-marketplace API access remains unverified.
+**Status:** Sandbox and Production API access verified successfully.
 
-#### Next Steps
+### Developer Account and Compliance
 
-1. Wait for eBay developer account approval.
-2. Obtain Sandbox credentials.
-3. Test OAuth authentication.
-4. Check Production Browse API eligibility.
-5. Update the documentation with actual test results.
+- Registered for and received approval from the eBay Developers Program.
+- Obtained Sandbox and Production application credentials.
+- Received a Marketplace Account Deletion notification exemption based on not persisting eBay data.
+- Successfully authenticated against both environments using OAuth 2.0 client credentials.
+- Verified that access tokens were issued with a lifetime of 7,200 seconds.
 
+### Sandbox Verification
+
+- Successfully authenticated against the Sandbox OAuth endpoint.
+- Successfully called the Sandbox Browse API.
+- Search query: `denim jacket`.
+- Results returned: 1.
+
+### Production Verification
+
+- Successfully authenticated against the Production OAuth endpoint.
+- Successfully called the live Browse API.
+- Search query: `denim jacket`.
+- Results returned: 3.
+
+A second Production search used the query `brown leather jacket` with a requested limit of 5.
+
+- Results returned: 5.
+- All 5 listings contained titles, prices, conditions, image URLs, and eBay listing URLs.
+- Only 1 result was pre-owned; the other 4 were classified as new with tags.
+
+These results motivated the implementation of a used-only condition filter.
+
+### Used-Only Search Verification
+
+**Date:** November 12, 2026
+
+- Environment: Production
+- Query: `brown leather jacket`
+- Filter: `conditions:{USED}`
+- Requested limit: 5
+- Results returned: 5
+- All five results were classified as pre-owned.
+- All five contained titles, prices, conditions, image URLs, and eBay listing URLs.
+
+The test confirmed that the used-condition filter works and that the API returns the fields required for Thrift Finder.
+
+The client processes results in memory without persisting live listing records. Exact listing titles, prices, and URLs are intentionally omitted from committed documentation.
+
+Keyword search does not guarantee an exact match for every requested attribute. FashionCLIP reranking may help improve relevance in future integration.
+
+### Automated Testing
+
+The reusable eBay client was tested with mocked API responses.
+
+- 11 eBay client unit tests passed.
+- Full backend test suite passed, with 1 existing skipped test.
+- Ruff linting passed.
+- Live Production search succeeded with used-only filtering enabled.
+
+### Privacy and Limitations
+
+The application received an exemption from Marketplace Account Deletion notifications on the basis that it does not persist eBay data.
+
+The current eBay client and preview script retrieve listings in memory without writing API responses, tokens, or listing records to files or a database. Future integration must preserve this behavior unless the application's compliance configuration is updated.
+
+Successful Production API requests demonstrate technical access at the time of testing but do not independently establish that all applicable eBay partnership or production-use requirements have been satisfied.
+
+The standalone client has not yet been integrated with FashionCLIP ranking or the application's search endpoint.
+
+### Next Steps
+
+1. Coordinate with the Backend Lead before connecting the eBay client to `/api/search`.
+2. Preserve the 500-item local fallback dataset.
+3. Ensure live eBay results are handled in memory without persistent storage.
+4. Validate image, price, condition, and link fields during integration.
+5. Review applicable eBay production-use requirements before deployment.
+6. Test API failures and verify local fallback behavior.
+
+See `docs/EBAY_FEASIBILITY.md` for additional verification details and reproduction commands.
 
 ## Privacy and evaluation
 
