@@ -68,7 +68,7 @@ The JSONL output has one record per garment. The main fields are:
 |---|---|
 | `id`, `title`, `source` | Local result identifier, label-based title, and `"local"` provenance |
 | `dataset_id`, `source_index` | Hugging Face dataset ID and original split row position |
-| `image_path` | Repository-relative local JPEG path; **not** a public URL |
+| `image_path` | Repository-relative JPEG path stored in the dataset metadata. The backend exposes the image through `GET /api/local-images/{listing_id}`, using the listing's `id`. The local filesystem path itself is not a public URL. |
 | `attributes` | Available `type`, `category`, `colors`, `material`, `cut`, `pattern`, and `brand` |
 | `price_band` | Original categorical/range price label, if present |
 | `price`, `listing_url` | Always `null` for archival garments; no verified live price or purchase link |
@@ -104,7 +104,7 @@ successful ingestion. Rebuild the index if the indexed dataset or model changes.
 From the repository root, with Python 3.11 activated:
 
 ```bash
-python -m pip install -e ".[dev,data]"
+python -m pip install -e ".[dev,data,ml]"
 # Optional quick smoke run (rewrites train metadata with 25 records):
 python scripts/ingest.py --split train --limit 25
 # Full local search corpus; re-run after the smoke test:
@@ -168,15 +168,15 @@ local, gitignored files; only permitted evaluation labels and code should be com
 
 ### Local result API integration
 
-The current `SearchResult` API schema allows `price: float | None` and
-`listing_url: str | None`, so the local archive correctly uses `null` for both.
-The backend must still turn a local `image_path` into a usable `image_url` for the
-frontend; local filesystem paths are not public web URLs. Coordinate with the
-Backend and Frontend Leads, and **do not fabricate prices or purchase links**.
+The `SearchResult` API schema allows `price: float | None` and `listing_url: str | None`, so local archival results correctly use `null` for both fields.
 
-FashionCLIP embedding/index generation is implemented separately in
-`scripts/build_embeddings.py` and `backend/app/ml/`. This ingestion pipeline
-provides photographs and metadata; it does not generate vectors itself.
+The S3-4 search implementation (PR #16) provides `GET /api/local-images/{listing_id}` for serving local clothing photographs. The search endpoint generates an `image_url` such as `/api/local-images/secondhand-002874` using the listing's `id`.
+
+The frontend uses this `image_url` to display clothing photographs. The underlying `image_path` remains a repository-relative filesystem path stored in the dataset metadata, not a public URL.
+
+Local archival results use `source: "local"` and do not contain verified sale prices or purchase links. **Do not fabricate prices or purchase links.**
+
+FashionCLIP embedding/index generation is implemented separately in `scripts/build_embeddings.py` and `backend/app/ml/`. The ingestion pipeline provides photographs and metadata; it does not generate embedding vectors itself.
 
 ## Planned eBay API integration
 
