@@ -7,7 +7,13 @@ import json
 import numpy as np
 import pytest
 
-from backend.app.ml.index import build_index, listing_text, load_index, save_index
+from backend.app.ml.index import (
+    build_index,
+    listing_labels,
+    listing_text,
+    load_index,
+    save_index,
+)
 from backend.tests.fakes import FakeEncoder, FakeImage
 
 MODEL = "fake/model"
@@ -49,12 +55,35 @@ def test_listing_text_uses_vocabulary_words():
     assert listing_text(listing) == "a photo of a gray and tan viscose regular fit winter jacket."
 
 
-def test_listing_text_keeps_unpercented_material_and_uses_an():
+def test_listing_text_maps_synthetic_leather_and_uses_an():
     listing = {
         "title": "Orange Jacket",
         "attributes": {"type": "Jacket", "colors": ["Orange"], "material": "PU leather"},
     }
-    assert listing_text(listing) == "a photo of an orange pu leather jacket."
+    assert listing_text(listing) == "a photo of an orange leather jacket."
+
+
+@pytest.mark.parametrize(
+    ("material", "fabric"),
+    [
+        ("100% bomull", "cotton"),
+        ("80% ull 20% polyamid", "wool"),
+        ("61% Cotton 39% Poly", "cotton"),
+        ("100% polyster", "polyester"),
+        ("unknown no match", None),
+        (None, None),
+    ],
+)
+def test_listing_labels_normalize_dataset_materials(material, fabric):
+    assert listing_labels({"attributes": {"material": material}}).fabric == fabric
+
+
+def test_load_index_rejects_an_index_built_from_older_texts(tmp_path):
+    save_index(_build(), tmp_path / "embeddings.npz")
+    renamed = [{**LISTINGS[0], "title": "green denim jacket"}, *LISTINGS[1:]]
+    listings_path = _write_listings(tmp_path / "listings.jsonl", renamed)
+    with pytest.raises(ValueError, match="older listing texts"):
+        load_index(MODEL, tmp_path / "embeddings.npz", listings_path)
 
 
 def test_listing_text_falls_back_to_title_when_labels_are_missing():

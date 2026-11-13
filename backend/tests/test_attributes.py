@@ -194,6 +194,15 @@ def test_per_feature_threshold_overrides_shared_one():
     )
 
 
+def test_fit_falls_back_to_default_unless_confident(extractor):
+    vocabulary = load_vocabulary()
+    assert vocabulary.scalars["fit"].default == "regular fit"
+    # No fit word in the photo: every fit is equally likely, so the default wins.
+    assert extractor.extract(image=FakeImage("black denim jacket")).attributes.fit == "regular fit"
+    # A clearly cropped jacket clears the confidence bar.
+    assert extractor.extract(image=FakeImage("black cropped jacket")).attributes.fit == "cropped"
+
+
 def test_extraction_returns_normalized_query_embedding(extractor):
     result = extractor.extract(image=FakeImage("red wool coat"))
     assert abs(float(np.linalg.norm(result.embedding)) - 1.0) < 1e-5
