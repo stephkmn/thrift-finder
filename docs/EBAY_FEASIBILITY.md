@@ -161,3 +161,32 @@ Sandbox and Production OAuth authentication, Browse API requests, and live used-
 The reusable eBay API client is implemented and verified through automated tests and live Production requests.
 
 **S1-1 feasibility testing is complete.** Integration with the application's search endpoint and frontend remains a separate development task to be coordinated with the Backend Lead.
+## Local credential configuration
+
+The eBay preview script automatically reads `EBAY_CLIENT_ID` and
+`EBAY_CLIENT_SECRET` from environment variables or the repository-root
+`.env` file using the existing backend settings configuration.
+
+For local development, create a private `.env` file in the repository root
+containing the appropriate eBay application credentials. The `.env` file is
+Git-ignored and must not be committed.
+
+Example configuration (placeholders only):
+
+```dotenv
+EBAY_CLIENT_ID=your-app-id
+EBAY_CLIENT_SECRET=your-cert-id
+```
+
+Run the preview from the repository root:
+
+```bash
+python -m scripts.ebay_preview --environment production --query "brown leather jacket" --limit 5
+```
+
+When credentials are configured, the script runs without interactive
+credential prompts. If credentials are missing, the existing prompts remain
+available.
+
+Production deployments should configure credentials as backend environment
+secrets rather than exposing them to the frontend or committing them to Git.
