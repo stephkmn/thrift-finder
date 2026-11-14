@@ -60,3 +60,38 @@ export interface SearchResult {
 export interface SearchResponse {
   results: SearchResult[]; // max 10
 }
+
+// GET /api/item/{id} (S3-6): details for an archive listing. Mirrors ItemDetails in
+// backend/app/schemas.py. eBay listings are never stored, so they always return 404; the
+// details page builds those from the search result instead.
+
+/** The listing's labels exactly as the dataset has them (any may be missing). */
+export interface DatasetLabels {
+  type: string | null;
+  category: string | null;
+  colors: string[];
+  material: string | null;
+  cut: string | null;
+  pattern: string | null;
+  brand: string | null;
+}
+
+/** One searched attribute next to the listing's label, mapped onto our vocabulary. */
+export interface AttributeComparison {
+  attribute: 'category' | 'color' | 'fabric' | 'fit';
+  yours: string;
+  listing: string | null; // null when the dataset has no label for it
+  match: boolean | null; // null when the label can't tell
+}
+
+export interface ItemDetails {
+  id: string;
+  title: string;
+  image_url: string;
+  source: 'local';
+  dataset_labels: DatasetLabels;
+  /** Empty unless the request passed the searched attributes as query parameters. */
+  comparison: AttributeComparison[];
+  /** CC BY 4.0 credit for the dataset photo, with a link to the dataset. */
+  credit: { text: string; url: string };
+}

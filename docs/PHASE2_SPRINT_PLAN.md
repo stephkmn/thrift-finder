@@ -155,7 +155,11 @@ flowchart LR
 - `POST /api/search` — `{query_id, original_attributes, edited_attributes, text}` → `{results: [{id, title, price, image_url, listing_url, source, match_score}] }` (max 10)
   - `price` and `listing_url` are always present but `null` for local archive items (`source: "local"`): they have
     no verified price or purchase link (see `docs/DATA.md`). `image_url` is always present.
-- `GET /api/item/{id}` — listing details for the details page
+- `GET /api/item/{id}` — listing details for the details page (S3-6). Archive (`source: "local"`) items only:
+  `{id, title, image_url, source, dataset_labels, comparison, credit}`, with no price or link. Optional query
+  parameters `category`, `color`, `fabric`, `fit` (the searched attributes) fill `comparison` with one
+  `{attribute, yours, listing, match}` row each. eBay ids return 404: eBay data is never stored, so the
+  details page builds eBay items from the search result. Typed: `ItemDetails` in `frontend/src/api/types.ts`.
 - `GET /api/health`
 
 Uploaded images are processed in memory and never written to disk or logs (Phase 1 privacy commitment). The
