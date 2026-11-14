@@ -162,7 +162,7 @@ describe('DetailsPage', () => {
     );
 
     const alert = await screen.findByRole('alert');
-    expect(alert).toHaveTextContent('Something went wrong while loading this listing');
+    expect(alert).toHaveTextContent("We couldn't load this listing");
     await userEvent.click(within(alert).getByRole('button', { name: 'Retry' }));
     await waitFor(() => expect(screen.getByRole('table')).toBeInTheDocument());
     expect(fetchMock).toHaveBeenCalledTimes(2);

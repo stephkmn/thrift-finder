@@ -125,8 +125,8 @@ function buildSearchRequest(session: Session, edited: Attributes): SearchRequest
   return session.input.text ? { ...request, text: session.input.text } : request;
 }
 
-const EXTRACT_FALLBACK_ERROR = 'Something went wrong while analyzing your item. Please try again.';
-const SEARCH_FALLBACK_ERROR = 'Something went wrong while finding matches. Please try again.';
+const EXTRACT_FALLBACK_ERROR = "We couldn't read your item. Try again.";
+const SEARCH_FALLBACK_ERROR = "We couldn't load your matches. Try again.";
 
 export function UploadPage() {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
@@ -233,11 +233,11 @@ export function UploadPage() {
         intro={
           <>
             <h2 ref={formHeadingRef} tabIndex={-1} className={styles.heading}>
-              {editingUpload ? 'Change your upload' : 'Found a jacket you love?'}
+              {editingUpload ? 'Change your upload' : 'Find that jacket secondhand'}
             </h2>
             <p className={styles.lede}>
-              Add a photo, a description, or both. We&rsquo;ll read its details so you can find it
-              secondhand.
+              Add a photo, a description, or both. We&rsquo;ll pick out details like color and
+              fabric, and you can change any of them before we search.
             </p>
           </>
         }

@@ -25,7 +25,7 @@ describe('validateImage', () => {
   });
 
   it('gives HEIC photos a specific hint, even with no MIME type', () => {
-    const hint = "iPhone HEIC photos aren't supported yet — export as JPG.";
+    const hint = "iPhone HEIC photos aren't supported yet. Export it as a JPG first.";
     expect(validateImage(makeFile('IMG_0001.heic', 'image/heic'))).toBe(hint);
     expect(validateImage(makeFile('IMG_0002.HEIC', ''))).toBe(hint);
   });

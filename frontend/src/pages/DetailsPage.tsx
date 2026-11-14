@@ -37,7 +37,7 @@ const DATASET_LABELS = [
   ['brand', 'Brand'],
 ] as const;
 
-const FALLBACK_ERROR = 'Something went wrong while loading this listing. Please try again.';
+const FALLBACK_ERROR = "We couldn't load this listing. Try again.";
 
 function Verdict({ match }: { match: boolean | null }) {
   if (match === null) return <span className={styles.unknown}>Not labeled</span>;

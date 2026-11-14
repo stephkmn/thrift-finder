@@ -9,7 +9,7 @@ function isHeic(file: File): boolean {
 /** Returns a user-facing error message, or null when the file can be uploaded. */
 export function validateImage(file: File): string | null {
   if (isHeic(file)) {
-    return "iPhone HEIC photos aren't supported yet — export as JPG.";
+    return "iPhone HEIC photos aren't supported yet. Export it as a JPG first.";
   }
   if (!(ACCEPTED_IMAGE_TYPES as readonly string[]).includes(file.type)) {
     return "That file isn't a JPG, PNG, or WebP image.";

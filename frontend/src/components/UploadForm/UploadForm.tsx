@@ -85,7 +85,7 @@ export function UploadForm({
         </div>
 
         <button type="submit" className={styles.submit} disabled={!canSubmit}>
-          Read the details
+          Find its details
         </button>
 
         {children}

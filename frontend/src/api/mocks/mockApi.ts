@@ -43,7 +43,7 @@ export async function mockExtract(input: {
 }): Promise<ExtractResponse> {
   await wait(mockDelayMs());
   if (input.text === MOCK_ERROR_TRIGGER) {
-    throw new ApiError(500, 'Something went wrong while analyzing your item. Please try again.');
+    throw new ApiError(500, "We couldn't read your item. Try again.");
   }
   const response = structuredClone(fixture) as ExtractResponse;
   return { ...response, query_id: mockQueryId() };
@@ -86,7 +86,7 @@ export function rankListings(pool: MockListing[], query: Attributes): SearchResp
 export async function mockSearch(request: SearchRequest): Promise<SearchResponse> {
   await wait(mockDelayMs());
   if (request.text === MOCK_SEARCH_ERROR_TRIGGER) {
-    throw new ApiError(500, 'Something went wrong while finding matches. Please try again.');
+    throw new ApiError(500, "We couldn't load your matches. Try again.");
   }
   return rankListings(MOCK_POOL, request.edited_attributes);
 }

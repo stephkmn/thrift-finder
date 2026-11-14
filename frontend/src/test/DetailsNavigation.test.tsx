@@ -11,7 +11,7 @@ async function showBoard() {
   const user = userEvent.setup();
   render(<UploadPage />);
   await user.type(screen.getByRole('textbox', { name: /description/i }), 'black denim jacket');
-  await user.click(screen.getByRole('button', { name: 'Read the details' }));
+  await user.click(screen.getByRole('button', { name: 'Find its details' }));
   await waitFor(() => expect(screen.getAllByRole('article')).toHaveLength(10));
   return user;
 }
@@ -61,6 +61,6 @@ describe('S3-6 navigation', () => {
 
     await user.click(screen.getByRole('button', { name: /^Back/ }));
     expect(window.location.pathname).toBe('/');
-    expect(screen.getByRole('button', { name: 'Read the details' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Find its details' })).toBeInTheDocument();
   });
 });
