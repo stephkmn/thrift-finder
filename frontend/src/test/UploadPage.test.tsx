@@ -217,20 +217,21 @@ describe('UploadPage — editor and results', () => {
     expect(updateButton()).toBeDisabled();
   });
 
-  it('flags the low-confidence fit until it is edited, and again after reset', async () => {
+  it('flags the low-confidence fabric until it is edited, and again after reset', async () => {
     fakeBackend();
     await extractText('jacket');
     const user = userEvent.setup();
-    const fitLabel = () => screen.getByText('Fit').closest('label')!;
+    const fabricLabel = () => screen.getByText('Fabric').closest('label')!;
 
+    // Fit ("regular fit", 0.55) is the default, so only fabric (0.52) is flagged.
     expect(screen.getAllByText('Double-check')).toHaveLength(1);
-    expect(fitLabel()).toHaveTextContent('Double-check');
+    expect(fabricLabel()).toHaveTextContent('Double-check');
 
-    await user.selectOptions(screen.getByRole('combobox', { name: /^fit/i }), 'slim fit');
+    await user.selectOptions(screen.getByRole('combobox', { name: /^fabric/i }), 'leather');
     expect(screen.queryByText('Double-check')).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Reset fit' }));
-    expect(fitLabel()).toHaveTextContent('Double-check');
+    await user.click(screen.getByRole('button', { name: 'Reset fabric' }));
+    expect(fabricLabel()).toHaveTextContent('Double-check');
   });
 
   it('shows skeletons while searching, then the results', async () => {

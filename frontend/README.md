@@ -23,7 +23,9 @@ React + TypeScript + Vite app for Thrift Searcher (CECS 451, Group 7). Owner: Me
   - An edited attribute shows what the model said (e.g. "was black") with a **Reset** link; **Reset all**
     restores every model value.
   - **Double-check** marks an attribute whose model confidence is below 0.6, but only while it still holds
-    the model's value. Confidence numbers are not shown in the editor.
+    the model's value. Confidence numbers are not shown in the editor. An attribute's `default` in
+    `attributes.yaml` is never flagged: the model reports fit's default ("regular fit") unless another fit is
+    at least 90% likely, so its confidence is low by design (S3-2 fix, PR #21).
   - Values the API returns that are not in the vocabulary are kept and shown as they are.
 - **Search trigger: automatic first, then a button.** The first search runs as soon as extract succeeds,
   with `edited_attributes` equal to `original_attributes`. After that, edits do not search on their own:
@@ -134,7 +136,7 @@ The editor's options come from the ML team's vocabulary file, `backend/app/ml/at
 time**: a small inline plugin in `vite.config.ts` turns `*.yaml` imports into JSON modules (parsed with the
 `yaml` package) for `npm run dev`, `npm run build`, and Vitest. `src/lib/vocabulary.ts` checks the shape and
 exports the `values` lists for category, color, fabric, and fit plus the feature names (keys of
-`others.features`), in file order. If the file's shape changes, the app fails to load with an error naming
+`others.features`), in file order, and each attribute's optional `default` (`DEFAULTS`). If the file's shape changes, the app fails to load with an error naming
 the missing key. The dev server's file access (`server.fs.allow`) is widened by that one file only.
 
 A change to `attributes.yaml` needs a frontend rebuild (or a dev-server reload). Every vocabulary color also
