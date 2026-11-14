@@ -173,8 +173,8 @@ export function ResultsGrid({ state, onRetry, onOpenDetails }: ResultsGridProps)
 
       {state.status === 'success' && count === 0 && (
         <p className={styles.empty}>
-          No matches for these details. Try a different color or fabric, or remove a feature, then
-          update your results.
+          No matches were found for these details. Try a different color or fabric, or remove a
+          feature, then update the results.
         </p>
       )}
 

@@ -101,7 +101,7 @@ describe('ResultsGrid', () => {
 
   it('shows a friendly message when there are no results', () => {
     render(<ResultsGrid state={{ status: 'success', results: [] }} onRetry={vi.fn()} />);
-    expect(screen.getByText(/no matches for these details/i)).toBeInTheDocument();
+    expect(screen.getByText(/no matches were found for these details/i)).toBeInTheDocument();
     expect(screen.queryByRole('list')).not.toBeInTheDocument();
   });
 

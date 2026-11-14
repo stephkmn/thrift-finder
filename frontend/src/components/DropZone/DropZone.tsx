@@ -145,7 +145,7 @@ export function DropZone({ file, onFileChosen, onRemove, disabled, errorId }: Dr
             {isDragging ? 'Drop to add this photo' : 'Drop a photo here or browse'}
           </p>
           <p id={hintId} className={styles.hint}>
-            JPG, PNG, or WebP, up to 10 MB. You can also paste one.
+            JPG, PNG, or WebP, up to 10 MB. You can also paste an image from the clipboard.
           </p>
         </div>
       )}

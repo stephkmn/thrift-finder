@@ -133,7 +133,7 @@ describe('DetailsPage', () => {
     render(<DetailsPage id="v1|123|0" searched={null} onBack={onBack} />);
 
     expect(
-      await screen.findByRole('heading', { name: 'This listing isn’t available' }),
+      await screen.findByRole('heading', { name: 'This listing is no longer available' }),
     ).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Back to search' }));
     expect(onBack).toHaveBeenCalledTimes(1);
@@ -162,7 +162,7 @@ describe('DetailsPage', () => {
     );
 
     const alert = await screen.findByRole('alert');
-    expect(alert).toHaveTextContent("We couldn't load this listing");
+    expect(alert).toHaveTextContent('This listing could not be loaded');
     await userEvent.click(within(alert).getByRole('button', { name: 'Retry' }));
     await waitFor(() => expect(screen.getByRole('table')).toBeInTheDocument());
     expect(fetchMock).toHaveBeenCalledTimes(2);

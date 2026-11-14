@@ -37,7 +37,7 @@ const DATASET_LABELS = [
   ['brand', 'Brand'],
 ] as const;
 
-const FALLBACK_ERROR = "We couldn't load this listing. Try again.";
+const FALLBACK_ERROR = 'This listing could not be loaded. Please try again.';
 
 function Verdict({ match }: { match: boolean | null }) {
   if (match === null) return <span className={styles.unknown}>Not labeled</span>;
@@ -89,8 +89,8 @@ function WhyItMatched({ item, searched }: { item: ItemDetails; searched: Attribu
             </tbody>
           </table>
           <p className={styles.note}>
-            Labels come from the dataset. The match score also weighs how alike the photos look, so
-            a listing can rank well even when a label differs.
+            Labels come from the dataset. The match score also accounts for visual similarity
+            between the photos, so a listing can rank highly even when a label differs.
           </p>
         </>
       )}
@@ -183,11 +183,11 @@ export function DetailsPage({ id, result, searched, onBack }: DetailsPageProps) 
         {back}
         <div className={styles.missing}>
           <h2 id={titleId} ref={headingRef} tabIndex={-1} className={styles.title}>
-            This listing isn&rsquo;t available
+            This listing is no longer available
           </h2>
           <p>
-            eBay listings aren&rsquo;t saved, so they can only be opened from your current results.
-            Start a new search to find it again.
+            eBay listings are not stored, so they can only be opened from the current results.
+            Please start a new search to find this listing again.
           </p>
         </div>
       </article>
@@ -243,7 +243,8 @@ export function DetailsPage({ id, result, searched, onBack }: DetailsPageProps) 
                 <span className="visually-hidden"> (opens in a new tab)</span>
               </a>
               <p className={styles.note}>
-                This listing comes from eBay. Open it for size, condition, and shipping.
+                This listing is from eBay. Open it on eBay for size, condition, and shipping
+                details.
               </p>
             </>
           )}

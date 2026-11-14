@@ -33,7 +33,7 @@ describe('pasting a photo', () => {
     expect(handled).toBe(true);
     expect(screen.getByText('Pasted image.png')).toBeInTheDocument();
     expect(screen.getByRole('img', { name: 'Preview of the selected photo' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Find its details' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Identify details' })).toBeEnabled();
   });
 
   it('takes an image pasted into the description box (how phones paste)', () => {

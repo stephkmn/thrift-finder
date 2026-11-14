@@ -27,12 +27,12 @@ function extractMessageForStatus(status: number): string {
   if (status === 415 || status === 422)
     return "The server couldn't read that photo. Try a JPG or PNG.";
   if (status === 429) return RATE_LIMITED;
-  return "We couldn't read your item. Try again.";
+  return 'Your item could not be analyzed. Please try again.';
 }
 
 function searchMessageForStatus(status: number): string {
   if (status === 429) return RATE_LIMITED;
-  return "We couldn't load your matches. Try again.";
+  return 'Your matches could not be loaded. Please try again.';
 }
 
 /** fetch() that turns network failures and non-2xx responses into user-safe ApiErrors. */
@@ -95,8 +95,8 @@ export async function search(searchRequest: SearchRequest): Promise<SearchRespon
 }
 
 function itemMessageForStatus(status: number): string {
-  if (status === 404) return "This listing isn't available anymore.";
-  return "We couldn't load this listing. Try again.";
+  if (status === 404) return 'This listing is no longer available.';
+  return 'This listing could not be loaded. Please try again.';
 }
 
 /**

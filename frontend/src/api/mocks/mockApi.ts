@@ -43,7 +43,7 @@ export async function mockExtract(input: {
 }): Promise<ExtractResponse> {
   await wait(mockDelayMs());
   if (input.text === MOCK_ERROR_TRIGGER) {
-    throw new ApiError(500, "We couldn't read your item. Try again.");
+    throw new ApiError(500, 'Your item could not be analyzed. Please try again.');
   }
   const response = structuredClone(fixture) as ExtractResponse;
   return { ...response, query_id: mockQueryId() };
@@ -86,7 +86,7 @@ export function rankListings(pool: MockListing[], query: Attributes): SearchResp
 export async function mockSearch(request: SearchRequest): Promise<SearchResponse> {
   await wait(mockDelayMs());
   if (request.text === MOCK_SEARCH_ERROR_TRIGGER) {
-    throw new ApiError(500, "We couldn't load your matches. Try again.");
+    throw new ApiError(500, 'Your matches could not be loaded. Please try again.');
   }
   return rankListings(MOCK_POOL, request.edited_attributes);
 }
@@ -103,7 +103,7 @@ function capitalize(text: string): string {
 export async function mockGetItem(id: string, searched?: Attributes): Promise<ItemDetails> {
   await wait(mockDelayMs());
   const listing = MOCK_POOL.find((item) => item.id === id && item.source === 'local');
-  if (!listing) throw new ApiError(404, "This listing isn't available anymore.");
+  if (!listing) throw new ApiError(404, 'This listing is no longer available.');
   const { attributes } = listing;
   const comparison: AttributeComparison[] = searched
     ? SCALARS.map((name) => ({

@@ -125,8 +125,8 @@ function buildSearchRequest(session: Session, edited: Attributes): SearchRequest
   return session.input.text ? { ...request, text: session.input.text } : request;
 }
 
-const EXTRACT_FALLBACK_ERROR = "We couldn't read your item. Try again.";
-const SEARCH_FALLBACK_ERROR = "We couldn't load your matches. Try again.";
+const EXTRACT_FALLBACK_ERROR = 'Your item could not be analyzed. Please try again.';
+const SEARCH_FALLBACK_ERROR = 'Your matches could not be loaded. Please try again.';
 
 export function UploadPage() {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
@@ -233,11 +233,11 @@ export function UploadPage() {
         intro={
           <>
             <h2 ref={formHeadingRef} tabIndex={-1} className={styles.heading}>
-              {editingUpload ? 'Change your upload' : 'Find that jacket secondhand'}
+              {editingUpload ? 'Change your upload' : 'Find secondhand matches for your jacket'}
             </h2>
             <p className={styles.lede}>
-              Add a photo, a description, or both. We&rsquo;ll pick out details like color and
-              fabric, and you can change any of them before we search.
+              Add a photo, a description, or both. Thrift Searcher identifies details such as color
+              and fabric, which you can adjust before searching.
             </p>
           </>
         }

@@ -84,15 +84,15 @@ Screenshots (mock data): `docs/screenshots/s3-5-board-desktop.png` (1440×900 wi
 - **Archive items** load `GET /api/item/{id}` with the attributes of the search that produced the board:
   - **Why it matched**: each searched attribute (category, color, fabric, fit) next to the listing's label,
     marked Matches, Different, or Not labeled. The backend maps the dataset's labels onto our vocabulary and
-    judges matches the same way `scripts/evaluate.py` does. A note explains that the score also weighs how
-    alike the photos look.
+    judges matches the same way `scripts/evaluate.py` does. A note explains that the score also accounts for
+    visual similarity between the photos.
   - **From the dataset**: the dataset's own labels (type, category, colors, material, cut, pattern, brand),
     leaving out missing ones.
   - The CC BY 4.0 credit, linked to the dataset on Hugging Face.
 - **eBay items** use only the search result already in the browser (photo, title, price, match score, and
   **View listing on eBay**). There is no backend or eBay call and nothing is stored, because the eBay
   exemption doesn't allow keeping eBay data.
-- **States.** A loading placeholder, an error with **Retry**, and "This listing isn't available" when a
+- **States.** A loading placeholder, an error with **Retry**, and "This listing is no longer available" when a
   details URL points to something the archive doesn't have (for example, a reloaded eBay listing).
 
 Screenshots (mock data): `docs/screenshots/s3-6-details-archive-desktop.png`, `s3-6-details-ebay-desktop.png`,
@@ -229,7 +229,7 @@ the console.
 - The description is sent with every search but cannot be edited in the editor; use **Edit upload**.
 - HEIC/HEIF photos (the iPhone default) are rejected. Export them as JPG first.
 - Details pages live only as long as the current results: nothing is saved, so after a reload or a new
-  search, an eBay listing's page says it isn't available, and an archive listing's page has no "why it
+  search, an eBay listing's page says it is no longer available, and an archive listing's page has no "why it
   matched" comparison.
 - "Why it matched" compares category, color, fabric, and fit only. Listings have no labels for other features
   (hood, zipper, …), and eBay listings have no labels at all.

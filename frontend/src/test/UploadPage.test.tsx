@@ -14,7 +14,7 @@ function setup() {
   render(<UploadPage />);
   return {
     user,
-    submit: () => screen.getByRole('button', { name: 'Find its details' }),
+    submit: () => screen.getByRole('button', { name: 'Identify details' }),
     fileInput: () => screen.getByLabelText('Photo file'),
     textbox: () => screen.getByRole('textbox', { name: /description/i }),
   };
@@ -86,13 +86,13 @@ describe('UploadPage', () => {
     await user.click(submit());
 
     const alert = await screen.findByRole('alert');
-    expect(alert).toHaveTextContent("We couldn't read your item");
+    expect(alert).toHaveTextContent('Your item could not be analyzed');
 
     await user.click(within(alert).getByRole('button', { name: 'Retry' }));
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     expect(screen.getByText('Analyzing your item…')).toBeInTheDocument();
 
-    expect(await screen.findByRole('alert')).toHaveTextContent("We couldn't read your item");
+    expect(await screen.findByRole('alert')).toHaveTextContent('Your item could not be analyzed');
   });
 });
 
@@ -250,7 +250,7 @@ describe('UploadPage — editor and results', () => {
   it('shows the empty state when the search returns no results', async () => {
     fakeBackend(() => json({ results: [] } satisfies SearchResponse));
     await extractText('jacket');
-    expect(await screen.findByText(/no matches for these details/i)).toBeInTheDocument();
+    expect(await screen.findByText(/no matches were found for these details/i)).toBeInTheDocument();
   });
 
   it('shows the __search_error__ alert, and Retry resends the same request', async () => {
@@ -258,7 +258,7 @@ describe('UploadPage — editor and results', () => {
     await extractText('__search_error__');
 
     const alert = await screen.findByRole('alert');
-    expect(alert).toHaveTextContent("We couldn't load your matches");
+    expect(alert).toHaveTextContent('Your matches could not be loaded');
 
     const searches = fakeBackend();
     await userEvent.click(within(alert).getByRole('button', { name: 'Retry' }));
@@ -346,7 +346,7 @@ describe('UploadPage — editor and results', () => {
     expect(note()).toBeInTheDocument();
 
     await user.click(updateButton());
-    expect(await screen.findByRole('alert')).toHaveTextContent('load your matches');
+    expect(await screen.findByRole('alert')).toHaveTextContent('matches could not be loaded');
     expect(searches).toHaveLength(2);
     expect(note()).not.toBeInTheDocument();
   });
