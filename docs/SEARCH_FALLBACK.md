@@ -1,8 +1,12 @@
 # S3-7 — Local retrieval fallback (Member B component)
 
-**Owners:** Members B (data-source fallback) and C (API integration). **Status:** isolated
-helper implemented; real `/api/search` and browser fallback handling still require
-coordination with Members C and D.
+**Owners:** Members B (data-source fallback) and C (API integration). **Status:** wired into
+`POST /api/search` (`backend/app/api/search.py`). Showing a fallback notice in the UI is
+still open (Member D).
+
+To use live eBay results, set `DATA_SOURCE=ebay` plus `EBAY_CLIENT_ID` /
+`EBAY_CLIENT_SECRET` (and optionally `EBAY_ENVIRONMENT=sandbox`) in `.env`. With
+`DATA_SOURCE=local` or missing credentials, the local index is used directly.
 
 ## Scope and approach
 
@@ -28,15 +32,14 @@ eBay data**.
 | Unexpected coding error | Propagate for diagnosis | No fallback |
 | Both providers unavailable | Propagate local failure to API layer | Existing safe 503 |
 
-The API owner must supply a `classify_live_error` callback for known eBay error
-conditions. The pending S1-1 `EbayAPIError` currently carries a safe message but
-not a structured `status_code`, so **HTTP 429 classification needs a small
-adapter or typed error update** when both PRs are merged. Do not parse or
-persist raw OAuth response bodies.
+`search.classify_ebay_error` maps `EbayAPIError.status_code`: 429 → `rate_limited`;
+any other eBay HTTP, connection or malformed-response error → `unavailable`. Other
+exceptions are not hidden and end in the safe 503. The fallback reason is logged
+(reason only, never the eBay response). Do not parse or persist raw OAuth response bodies.
 
-The client should show a friendly notice when falling back. This helper returns
-`fallback_reason` for that purpose, but does not yet modify the API response
-schema or UI. The Backend/Frontend owners should agree on how to convey it.
+The UI can already tell live and fallback results apart by each result's `source`
+(`"ebay"` vs `"local"`). A dedicated fallback notice would need a new response field
+in `schemas.py` and `types.ts`; not added yet.
 
 Bad-image errors (413/415/422) are already validated by `POST /api/extract`;
 expired query IDs (410) and local model/index failures (503) are handled by the
@@ -52,5 +55,6 @@ python -m ruff check backend/ scripts/
 ```
 
 Tests use fake providers and do not need eBay credentials, live requests, or
-FashionCLIP model downloads. The helper should be integrated only after the
-search endpoint and eBay client branches are merged or with a coordinated PR.
+FashionCLIP model downloads. `backend/tests/test_live_search_api.py` covers the endpoint
+fallback cases, and `backend/tests/conftest.py` forces `DATA_SOURCE=local` so tests never
+call eBay even if your `.env` enables it.

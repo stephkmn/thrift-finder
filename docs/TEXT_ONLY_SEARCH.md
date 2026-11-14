@@ -40,8 +40,8 @@ show extracted attributes and the results grid should show real local clothing p
 Change **brown** to **black** and select **Update results**; ranking should be recalculated.
 
 The local archive has no current sale prices or purchase links. Both fields are `null`
-rather than invented. This endpoint does not use or persist any eBay data. The standalone
-S1-1 eBay client is intentionally excluded until the Backend Lead reviews integration.
+rather than invented. With `DATA_SOURCE=ebay`, the same text-only query is answered by live
+eBay listings instead, with the local archive as the fallback (see `docs/SEARCH_FALLBACK.md`).
 
 ## Tests
 

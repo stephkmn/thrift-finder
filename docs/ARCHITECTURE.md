@@ -50,7 +50,8 @@ flowchart LR
 | Encoder (CLIP / FashionCLIP) | `backend/app/ml/encoder.py` | A | Done (S1-5); wired into `/api/extract` (S2-1) |
 | Zero-shot attribute extractor | `backend/app/ml/attributes.py` + `attributes.yaml` | A | Done (S1-5, S1-6); wired into `/api/extract` (S2-1) |
 | Query builder | `backend/app/ml/query.py` (edit arithmetic) + `backend/app/data/query_keywords.py` (keywords) | A + B | Done (S2-4); keywords are for eBay retrieval only |
-| eBay Browse client | `backend/app/data/ebay_client.py` | B | Planned (S1-1, S2-2) |
+| eBay Browse client | `backend/app/data/ebay_client.py` | B | Done (S1-1) |
+| Live eBay re-ranking + fallback | `backend/app/ml/live_search.py`, `backend/app/data/retrieval_fallback.py`, `backend/app/api/search.py` | C + B | Done (S3-7) |
 | Local dataset loader | `backend/app/data/local_dataset.py` | B | Done (S2-2): 500 CC BY 4.0 listings, see `docs/DATA.md` |
 | Listing embedding index | `backend/app/ml/index.py` + `scripts/build_embeddings.py` | A | Done (S2-3) |
 | Re-ranker | `backend/app/ml/rerank.py` | A | Done (S2-5, ML side): `search_listings()`; the `/api/search` route is pending (C) |
@@ -59,7 +60,7 @@ flowchart LR
 ## Request flow
 
 1. **`POST /api/extract`** — multipart form (`image` + optional `text`). FastAPI validates size/MIME, streams the image into memory (never to disk per privacy commitment in sprint plan §4.2), calls `ml.attributes.extract_attributes(...)`, stores the query embedding in a short-lived in-memory cache keyed by a freshly generated `query_id`, and returns `ExtractResponse`.
-2. **`POST /api/search`** — `SearchRequest` with `query_id` + `original_attributes` + `edited_attributes` + optional `text`. The query builder derives a text embedding from the edits (`q_img = normalize(E_img(upload) + λ · (E_txt(edited) − E_txt(original)))`), candidates come from eBay (live, retrieved with keywords from `backend/app/data/query_keywords.py`) or, for the local fallback (`DATA_SOURCE=local`), are every listing in the precomputed embedding index with no keyword filter (500 listings rank in ~60 ms), and the re-ranker returns up to 10 `SearchResult`s with `match_score` rescaled to 0–100.
+2. **`POST /api/search`** — `SearchRequest` with `query_id` + `original_attributes` + `edited_attributes` + optional `text`. The query builder derives a text embedding from the edits (`q_img = normalize(E_img(upload) + λ · (E_txt(edited) − E_txt(original)))`), candidates come from eBay (`DATA_SOURCE=ebay`: up to 20 used listings retrieved with keywords from `backend/app/data/query_keywords.py`, their thumbnails and titles embedded in memory per request, ~2–3 s; if eBay is rate-limited, down or returns nothing, the local index answers instead) or, for the local fallback (`DATA_SOURCE=local`), are every listing in the precomputed embedding index with no keyword filter (500 listings rank in ~60 ms), and the re-ranker returns up to 10 `SearchResult`s with `match_score` rescaled to 0–100.
 3. **`GET /api/item/{id}`** — details for the frontend details page.
 4. **`GET /api/health`** — liveness probe for CI and local smoke tests.
 
