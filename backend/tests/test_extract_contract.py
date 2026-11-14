@@ -144,6 +144,26 @@ def _encoded(image: Image.Image, fmt: str) -> bytes:
     return buffer.getvalue()
 
 
+def test_extract_accepts_an_iphone_jpeg_saved_as_mpo(client, extractor):
+    # iPhone "Most Compatible" photos are JPEGs with a second embedded image (MPO).
+    main, extra = Image.new("RGB", (64, 48), "red"), Image.new("RGB", (32, 24), "blue")
+    buffer = io.BytesIO()
+    main.save(buffer, format="MPO", save_all=True, append_images=[extra])
+    assert Image.open(io.BytesIO(buffer.getvalue())).format == "MPO"
+
+    response = _post(client, files=_image(buffer.getvalue(), "image/jpeg"))
+    assert response.status_code == 200
+    received = extractor.calls[0]["image"]
+    assert received.size == (64, 48)  # the main image, not the embedded one
+    assert received.convert("RGB").getpixel((0, 0))[0] > 200  # red, decoded correctly
+
+
+def test_extract_rejects_heic(client, extractor):
+    response = _post(client, files=_image(b"\x00\x00\x00\x18ftypheic", "image/heic"))
+    assert response.status_code == 415
+    assert extractor.calls == []
+
+
 def test_extract_rejects_a_real_format_that_is_not_allowed(client, extractor):
     # A GIF that claims to be a PNG: the declared type passes, the decoded format must not.
     gif = _encoded(Image.new("RGB", (4, 4), "black"), "GIF")
