@@ -22,6 +22,9 @@ const SKELETON_COUNT = 6;
 
 const usd = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
 
+// CC BY 4.0 requires crediting the dataset wherever its photos are shown (docs/DATA.md).
+const DATASET_URL = 'https://huggingface.co/datasets/fnauman/fashion-second-hand-front-only-rgb';
+
 const SOURCE_LABELS: Record<SearchResult['source'], string> = {
   ebay: 'eBay',
   local: 'Archive (not for sale)',
@@ -184,6 +187,17 @@ export function ResultsGrid({ state, onRetry, onOpenDetails }: ResultsGridProps)
             <ResultCard key={result.id} result={result} onOpenDetails={onOpenDetails} />
           ))}
         </ul>
+      )}
+
+      {state.status === 'success' && state.results.some((result) => result.source === 'local') && (
+        <p className={styles.credit}>
+          Archive photos and labels:{' '}
+          <a href={DATASET_URL} target="_blank" rel="noopener noreferrer">
+            Second-Hand Fashion dataset, Nauman (2024), CC BY 4.0
+            <span className="visually-hidden"> (opens in a new tab)</span>
+          </a>
+          . Photos resized.
+        </p>
       )}
     </section>
   );

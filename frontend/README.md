@@ -98,12 +98,16 @@ Screenshots (mock data): `docs/screenshots/s3-5-board-desktop.png` (1440×900 wi
 Screenshots (mock data): `docs/screenshots/s3-6-details-archive-desktop.png`, `s3-6-details-ebay-desktop.png`,
 `s3-6-details-archive-phone.png`, and `s3-6-details-reload-desktop.png`.
 
+- **Dataset credit.** Whenever the board shows archive photos, a line under it credits the dataset (CC BY 4.0)
+  and links to it on Hugging Face, as `docs/DATA.md` requires. eBay-only boards have no credit line.
+
 **Planned next:** a notice when eBay fails and the archive answers instead (needs a new `SearchResponse`
 field; follow-up to PR #20).
 
-The request/response types in `src/api/types.ts` are a **draft** of the S1-4 API contract and must be confirmed
-against the backend's Pydantic schemas. `price` and `listing_url` are always present but `null` for local
-archive items, which have no verified price or purchase link (`docs/DATA.md`).
+The request and response types in `src/api/types.ts` mirror the backend's Pydantic models in
+`backend/app/schemas.py`; a change to one goes in the same PR as the other. `price` and `listing_url` are always
+present but `null` for local archive items, which have no verified price or purchase link (`docs/DATA.md`).
+`price` is also `null` for an eBay listing priced in another currency, since the UI shows USD.
 
 ## Prerequisites
 
@@ -143,8 +147,12 @@ delay, with a fresh `query_id`, and every search is answered by the mock search 
 
 ## Mock search
 
-`POST /api/search` is not built yet (S2-5, Members C and A), so search runs against a mock in
-`src/api/mocks/`:
+With `VITE_USE_MOCKS=true`, searches are answered by a mock in `src/api/mocks/`, so the UI runs without the
+backend, the model, or the dataset. The real `POST /api/search` (S3-4, S3-7) is described under
+[Run against the backend](#run-against-the-backend).
+
+- **Item details** (`mockGetItem`): mock archive items have a details page; mock eBay items and unknown ids
+  return 404, like the backend.
 
 - **Pool** (`searchPool.ts`): 28 fake listings. Every attribute value comes from `attributes.yaml`. Titles are
   built from the attributes (e.g. "Brown suede trucker jacket") and images are generated SVG placeholders
@@ -158,7 +166,7 @@ delay, with a fresh `query_id`, and every search is answered by the mock search 
 - The pool is built around the extract fixture, so a single edit (black → brown, or removing the hood)
   visibly changes the top 10.
 
-This only stands in for the real re-ranker (CLIP embeddings with edit arithmetic, plan §4.3).
+This only stands in for the real re-ranker (FashionCLIP embeddings with edit arithmetic, plan section 4.3).
 
 ## Attribute vocabulary (build step)
 
@@ -174,10 +182,15 @@ needs a swatch in `src/lib/colorSwatches.ts`; a test fails if one is missing.
 
 ## Run against the backend
 
-1. Set `VITE_USE_MOCKS=false` in `.env`.
-2. Start the FastAPI service on port 8000 (see the root `README.md`).
-3. Run `npm run dev`. The Vite dev server proxies every `/api/*` request to `http://localhost:8000`, so no CORS
-   setup is needed during development.
+1. Build the local data once, if you haven't: `scripts/ingest.py` and `scripts/build_embeddings.py` (see
+   `docs/DATA.md`). Search returns 503 without `data/embeddings.npz`, and an index built before PR #21 must be
+   rebuilt.
+2. Choose the data source in the root `.env`: `DATA_SOURCE=local` searches the 500-item archive;
+   `DATA_SOURCE=ebay` (with `EBAY_CLIENT_ID` and `EBAY_CLIENT_SECRET`) searches live used eBay listings and
+   falls back to the archive if eBay fails (`docs/SEARCH_FALLBACK.md`). Restart the backend after changing it.
+3. Start the FastAPI service on port 8000 (see the root `README.md`).
+4. Set `VITE_USE_MOCKS=false` in `frontend/.env` and run `npm run dev`. The Vite dev server proxies every
+   `/api/*` request to `http://localhost:8000`, so no CORS setup is needed during development.
 
 ## Test, lint, format
 
@@ -221,9 +234,13 @@ the console.
 
 ## Known limitations
 
-- **Mock search only** until S2-5 lands `POST /api/search`. Results come from the 28-item fake pool and a
-  simple overlap score, not CLIP re-ranking. Mock listings, prices, links, and images are all fake.
-- Mock extract returns the same black denim jacket attributes, whatever you upload.
+- In mock mode, results come from the 28-item fake pool and a simple overlap score, not FashionCLIP
+  re-ranking, and extract returns the same black denim jacket attributes whatever you upload. Mock listings,
+  prices, links, and images are all fake.
+- When eBay fails and the archive answers instead, the only sign is the Archive badge on each polaroid; a
+  notice is planned (see Planned next).
+- Search errors show one general message: an expired search session (410) and an unavailable model or index
+  (503) are not told apart yet.
 - Local archive items have no price and no listing link (shown as "Price unavailable" and "Archive (not for
   sale)"), because the fallback dataset has neither (`docs/DATA.md`).
 - The description is sent with every search but cannot be edited in the editor; use **Edit upload**.
@@ -233,5 +250,4 @@ the console.
   matched" comparison.
 - "Why it matched" compares category, color, fabric, and fit only. Listings have no labels for other features
   (hood, zipper, …), and eBay listings have no labels at all.
-- The contract types are a draft until Members A and C confirm them.
 - TypeScript is pinned to 6.0 because `typescript-eslint` does not support TypeScript 7 yet.

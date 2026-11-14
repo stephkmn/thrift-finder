@@ -1,7 +1,6 @@
 /**
- * DRAFT API contract (S1-4) — mirrors docs/PHASE2_SPRINT_PLAN.md §4.2.
- * Members A (ML) and C (Backend) must confirm these against the Pydantic schemas.
- * Change only via PR, per the plan.
+ * API contract (S1-4, extended in S3-6). Mirrors the Pydantic models in backend/app/schemas.py
+ * and docs/PHASE2_SPRINT_PLAN.md section 4.2. Change both sides in the same PR, per the plan.
  */
 
 /** Attributes that always hold exactly one value. */
@@ -39,7 +38,8 @@ export interface ExtractResponse {
   query_id: string;
 }
 
-// POST /api/search (S2-5). The UI uses a mock until the backend endpoint lands.
+// POST /api/search (S2-5, S3-4, S3-7): live eBay listings with DATA_SOURCE=ebay, otherwise (or when
+// eBay fails) the local archive. VITE_USE_MOCKS=true answers from src/api/mocks/ instead.
 export interface SearchRequest {
   query_id: string;
   original_attributes: Attributes;
@@ -50,7 +50,7 @@ export interface SearchRequest {
 export interface SearchResult {
   id: string;
   title: string;
-  price: number | null; // USD; null = no verified price (local archive items)
+  price: number | null; // USD; null for archive items and for eBay listings in another currency
   image_url: string;
   listing_url: string | null; // null for local archive items: they are not for sale
   source: 'ebay' | 'local';
