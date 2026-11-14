@@ -55,14 +55,15 @@ function ResultCard({ result, onOpenDetails }: ResultCardProps) {
             image
           )}
         </div>
-        {/* Written on the frame: what you need to compare photos at a glance. */}
+        {/* Written on the frame: what you need to compare photos at a glance. The match score
+            stays here in reading order (title, price, score) but is shown as a stamp on the photo. */}
         <div className={styles.caption}>
           <h3 id={titleId} className={styles.title}>
             {result.title}
           </h3>
           <p className={styles.meta}>
             <span className={styles.price} data-missing={result.price === null || undefined}>
-              {result.price === null ? 'No price' : usd.format(result.price)}
+              {result.price === null ? 'Price unavailable' : usd.format(result.price)}
             </span>
             <span className={styles.score}>
               <span className={styles.scoreLabel}>Match</span>
@@ -78,17 +79,11 @@ function ResultCard({ result, onOpenDetails }: ResultCardProps) {
         <div className={styles.details}>
           {onOpenDetails && (
             <span className={styles.hint} aria-hidden="true">
-              Click for details
+              See details
             </span>
           )}
           <span className={styles.source} data-source={result.source}>
             {SOURCE_LABELS[result.source]}
-          </span>
-          <span className={styles.meter} aria-hidden="true">
-            <span className={styles.meterLabel}>Match</span>
-            <span className={styles.bar}>
-              <span style={{ width: `${Math.min(100, Math.max(0, score))}%` }} />
-            </span>
           </span>
           {result.listing_url && (
             <a

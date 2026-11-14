@@ -32,7 +32,7 @@ React + TypeScript + Vite app for Thrift Searcher (CECS 451, Group 7). Owner: Me
   the model's attributes, the edited attributes, and the original description as `text` (left out when
   there was none). Responses from superseded searches are ignored.
 - **Results grid** (`ResultsGrid`; a polaroid board since S3-5, below): up to 10 cards with the image (title
-  as alt text), title, USD price or "Price unavailable" ("No price" since S3-5), a match-score bar with the
+  as alt text), title, USD price or "Price unavailable", a match-score bar with the
   rounded number, a source badge ("eBay" or "Archive (not for sale)"), and **View listing**, which opens the
   original listing in a new tab (`rel="noopener noreferrer"`). Cards with no `listing_url` have no link. While searching, skeleton cards
   show and "Finding matches…" is announced politely; zero results show a friendly empty message; errors
@@ -51,16 +51,17 @@ page").
   "Your results don't include these edits yet" note) sticks to the bottom of the window whenever the editor
   runs past it, so it is always on screen; checked at 1280×800, 1366×768, 1440×900, 1920×1080, and on a phone.
 - **Polaroids.** Each result is a white instant-photo frame taped to the board at a slight tilt (seven angles in
-  rotation, so no polaroid matches the one beside or above it). The title, the price ("No price" for archive
-  items), and the match score are written on the frame. Rank order still reads left to right, top to bottom. The loading
+  rotation, so no polaroid matches the one beside or above it). The title and the price ("Price unavailable"
+  for archive items) are written on the frame; the match score is a white stamp in the photo's top-right
+  corner, so long prices fit even on the narrowest polaroids. Rank order still reads left to right, top to bottom. The loading
   skeletons use the same frame.
 - **Hover to blur.** With a mouse, hovering a polaroid (or tabbing into it) straightens and lifts it, blurs the
-  photo, and shows an overlay with the source badge, a match bar, and **View listing**. Touch screens have no
+  photo, and shows an overlay with the source badge and **View listing**; the match stamp stays on top. Touch screens have no
   hover, so there the source badge and **View listing** sit under the caption instead. The switch is CSS only
   (`@media (hover: hover) and (pointer: fine)`): the details exist once in the page, and screen readers read
-  them in the same order either way. The match bar is decorative; the number on the frame is what gets read.
+  them in the same order either way.
 - **Click → details page.** `ResultsGrid` takes an optional `onOpenDetails(id)`. When it is passed, each photo
-  becomes a button ("See details: <title>") and the overlay shows a "Click for details" hint. `UploadPage` does
+  becomes a button ("See details: <title>") and the overlay shows a "See details" hint under **View listing**. `UploadPage` does
   not pass it yet, so photos are not clickable until S3-6 adds the details page.
 
 Screenshots (mock data): `docs/screenshots/s3-5-board-desktop.png` (1440×900 window),
@@ -191,7 +192,7 @@ the console.
 - **Mock search only** until S2-5 lands `POST /api/search`. Results come from the 28-item fake pool and a
   simple overlap score, not CLIP re-ranking. Mock listings, prices, links, and images are all fake.
 - Mock extract returns the same black denim jacket attributes, whatever you upload.
-- Local archive items have no price and no listing link (shown as "No price" and "Archive (not for
+- Local archive items have no price and no listing link (shown as "Price unavailable" and "Archive (not for
   sale)"), because the fallback dataset has neither (`docs/DATA.md`).
 - The description is sent with every search but cannot be edited in the editor; use **Edit upload**.
 - HEIC/HEIF photos (the iPhone default) are rejected. Export them as JPG first.

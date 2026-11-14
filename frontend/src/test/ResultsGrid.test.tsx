@@ -49,7 +49,7 @@ describe('ResultsGrid', () => {
     render(<ResultsGrid state={{ status: 'success', results: [ebay, local] }} onRetry={vi.fn()} />);
     const item = within(card(local.title));
 
-    expect(item.getByText('No price')).toBeInTheDocument();
+    expect(item.getByText('Price unavailable')).toBeInTheDocument();
     expect(item.getByText('Archive (not for sale)')).toBeInTheDocument();
     expect(item.getByText('40')).toBeInTheDocument();
     expect(item.queryByRole('link')).not.toBeInTheDocument();
@@ -89,7 +89,7 @@ describe('ResultsGrid', () => {
   it('leaves photos unclickable until there is a details page to open', () => {
     render(<ResultsGrid state={{ status: 'success', results: [ebay, local] }} onRetry={vi.fn()} />);
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
-    expect(screen.queryByText('Click for details')).not.toBeInTheDocument();
+    expect(screen.queryByText('See details')).not.toBeInTheDocument();
   });
 
   it('shows skeleton cards and announces progress while loading', () => {
