@@ -47,6 +47,7 @@ function ResultCard({ result, onOpenDetails }: ResultCardProps) {
               type="button"
               className={styles.photoButton}
               aria-label={`See details: ${result.title}`}
+              data-listing-id={result.id}
               onClick={() => onOpenDetails(result.id)}
             >
               {image}

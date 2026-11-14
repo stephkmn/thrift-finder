@@ -1,4 +1,5 @@
 import { useEffect, useReducer, useRef } from 'react';
+import type { ReactNode } from 'react';
 import { ApiError, extract, search } from '../api/client';
 import type { ExtractInput } from '../api/client';
 import type { Attributes, ExtractResponse, SearchRequest, SearchResult } from '../api/types';
@@ -7,6 +8,8 @@ import { ResultsGrid } from '../components/ResultsGrid/ResultsGrid';
 import { UploadForm } from '../components/UploadForm/UploadForm';
 import { UploadSummary } from '../components/UploadSummary/UploadSummary';
 import { sameAttributes } from '../lib/attributes';
+import { useRoute } from '../lib/route';
+import { DetailsPage } from './DetailsPage';
 import styles from './UploadPage.module.css';
 
 type ExtractState =
@@ -127,6 +130,7 @@ const SEARCH_FALLBACK_ERROR = 'Something went wrong while finding matches. Pleas
 
 export function UploadPage() {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
+  const { route, openItem, backToBoard } = useRoute();
   // Ignore responses from requests superseded by "Start over" or a newer request.
   const extractRequestId = useRef(0);
   const searchRequestId = useRef(0);
@@ -188,6 +192,24 @@ export function UploadPage() {
     else summaryHeadingRef.current?.focus();
   }, [session, editingUpload]);
 
+  // Opening a polaroid remembers where the board was, so Back returns to the same spot.
+  const lastOpened = useRef<{ id: string; scrollY: number } | null>(null);
+  const openDetails = (id: string) => {
+    lastOpened.current = { id, scrollY: window.scrollY };
+    openItem(id);
+  };
+  useEffect(() => {
+    const opened = lastOpened.current;
+    if (route.page !== 'board' || !opened) return;
+    lastOpened.current = null;
+    window.scrollTo({ top: opened.scrollY });
+    // Keyboard users land back on the photo they opened, not at the top of the page.
+    const photo = [...document.querySelectorAll<HTMLElement>('[data-listing-id]')].find(
+      (element) => element.dataset.listingId === opened.id,
+    );
+    photo?.focus({ preventScroll: true });
+  }, [route.page]);
+
   // On phones an extract error renders below the fold; bring it into view when it arrives.
   const errorRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -199,10 +221,11 @@ export function UploadPage() {
     });
   }, [state.extract.status]);
 
+  let board: ReactNode;
   if (showForm) {
     const extractState = state.extract;
     const isLoading = extractState.status === 'loading';
-    return (
+    board = (
       <UploadForm
         onSubmit={runExtract}
         disabled={isLoading}
@@ -264,56 +287,75 @@ export function UploadPage() {
         )}
       </UploadForm>
     );
+  } else {
+    // The form is hidden only once a session exists, so session and edited are set here.
+    const activeSession = session!;
+    const attributes = edited!;
+    const searchState = state.search;
+    const searching = searchState.status === 'loading' || searchState.status === 'idle';
+    const hasChanges =
+      state.lastSearched === null || !sameAttributes(attributes, state.lastSearched);
+
+    board = (
+      <div className={styles.session}>
+        {/* Right-hand column on wide screens: what you gave us, then what we found. */}
+        <div className={styles.sidebar}>
+          <UploadSummary
+            input={activeSession.input}
+            queryId={activeSession.extracted.query_id}
+            onEdit={() => dispatch({ type: 'editUpload' })}
+            onStartOver={startOver}
+            headingRef={summaryHeadingRef}
+          />
+
+          <AttributeEditor
+            extracted={activeSession.extracted}
+            value={attributes}
+            onChange={(next) => dispatch({ type: 'edit', attributes: next })}
+          >
+            <button
+              type="button"
+              className={styles.update}
+              disabled={searching || !hasChanges}
+              onClick={() => runSearch(buildSearchRequest(activeSession, attributes))}
+            >
+              Update results
+            </button>
+            {/* After a failed search there are no results on screen for this note to describe. */}
+            {!searching &&
+              searchState.status !== 'error' &&
+              hasChanges &&
+              state.lastSearched !== null && (
+                <p className={styles.pending}>Your results don&rsquo;t include these edits yet.</p>
+              )}
+          </AttributeEditor>
+        </div>
+
+        <ResultsGrid
+          state={searchState.status === 'idle' ? { status: 'loading' } : searchState}
+          onRetry={() => {
+            if (searchState.status === 'error') void runSearch(searchState.request);
+          }}
+          onOpenDetails={openDetails}
+        />
+      </div>
+    );
   }
 
-  // The form is hidden only once a session exists, so session and edited are set here.
-  const activeSession = session!;
-  const attributes = edited!;
-  const searchState = state.search;
-  const searching = searchState.status === 'loading' || searchState.status === 'idle';
-  const hasChanges = state.lastSearched === null || !sameAttributes(attributes, state.lastSearched);
-
+  const results = state.search.status === 'success' ? state.search.results : [];
   return (
-    <div className={styles.session}>
-      {/* Right-hand column on wide screens: what you gave us, then what we found. */}
-      <div className={styles.sidebar}>
-        <UploadSummary
-          input={activeSession.input}
-          queryId={activeSession.extracted.query_id}
-          onEdit={() => dispatch({ type: 'editUpload' })}
-          onStartOver={startOver}
-          headingRef={summaryHeadingRef}
+    <>
+      {/* The board stays mounted while a listing is open, so Back returns to the same results. */}
+      <div hidden={route.page === 'item'}>{board}</div>
+      {route.page === 'item' && (
+        <DetailsPage
+          key={route.id}
+          id={route.id}
+          result={results.find((result) => result.id === route.id)}
+          searched={state.lastSearched}
+          onBack={backToBoard}
         />
-
-        <AttributeEditor
-          extracted={activeSession.extracted}
-          value={attributes}
-          onChange={(next) => dispatch({ type: 'edit', attributes: next })}
-        >
-          <button
-            type="button"
-            className={styles.update}
-            disabled={searching || !hasChanges}
-            onClick={() => runSearch(buildSearchRequest(activeSession, attributes))}
-          >
-            Update results
-          </button>
-          {/* After a failed search there are no results on screen for this note to describe. */}
-          {!searching &&
-            searchState.status !== 'error' &&
-            hasChanges &&
-            state.lastSearched !== null && (
-              <p className={styles.pending}>Your results don&rsquo;t include these edits yet.</p>
-            )}
-        </AttributeEditor>
-      </div>
-
-      <ResultsGrid
-        state={searchState.status === 'idle' ? { status: 'loading' } : searchState}
-        onRetry={() => {
-          if (searchState.status === 'error') void runSearch(searchState.request);
-        }}
-      />
-    </div>
+      )}
+    </>
   );
 }

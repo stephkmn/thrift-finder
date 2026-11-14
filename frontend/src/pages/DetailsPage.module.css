@@ -1,0 +1,20 @@
+.details {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.back {
+  justify-self: start;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.5rem);
+  font-weight: 400;
+}
+
+/* Focused programmatically when the page opens; the focus ring would only distract. */
+.title:focus {
+  outline: none;
+  box-shadow: none;
+}
