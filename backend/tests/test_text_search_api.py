@@ -38,6 +38,7 @@ def setup_search():
 
     app.dependency_overrides[get_query_cache] = lambda: cache
     app.dependency_overrides[search_api.get_search_runner] = lambda: fake_runner
+    app.dependency_overrides[search_api.get_live_search] = lambda: None
     try:
         yield TestClient(app), cache, seen
     finally:
