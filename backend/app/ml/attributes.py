@@ -45,6 +45,9 @@ class ScalarSpec:
     values: list[str]
     templates: list[str]
     synonyms: dict[str, str] = field(default_factory=dict)
+    # When set, a value other than `default` is reported only at >= min_confidence.
+    default: str | None = None
+    min_confidence: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -77,6 +80,8 @@ def load_vocabulary(path: Path = VOCABULARY_PATH) -> Vocabulary:
         unknown = set(spec.synonyms.values()) - set(spec.values)
         if unknown:
             raise ValueError(f"{name} synonyms point at unknown values: {sorted(unknown)}")
+        if spec.default is not None and spec.default not in spec.values:
+            raise ValueError(f"{name} default {spec.default!r} is not one of its values")
     others = raw["others"]
     return Vocabulary(
         scalars=scalars,
@@ -165,9 +170,12 @@ class AttributeExtractor:
         attributes: dict = {}
         confidences: dict = {}
         for name, prompts in self._scalar_prompts.items():
+            spec = self.vocabulary.scalars[name]
             probs = _softmax(scale * (prompts @ query))
             best = int(probs.argmax())
-            attributes[name] = self.vocabulary.scalars[name].values[best]
+            if spec.default is not None and probs[best] < spec.min_confidence:
+                best = spec.values.index(spec.default)
+            attributes[name] = spec.values[best]
             confidences[name] = round(float(probs[best]), 4)
 
         pair_logits = scale * np.stack(

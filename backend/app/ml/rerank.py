@@ -66,8 +66,13 @@ def score(
     return total / weight_sum
 
 
-def rank(query: Query, index: ListingIndex, top_k: int = TOP_K) -> list[Match]:
-    scores = score(query, index)
+def rank(
+    query: Query,
+    index: ListingIndex,
+    top_k: int = TOP_K,
+    weights: tuple[float, float, float] = WEIGHTS,
+) -> list[Match]:
+    scores = score(query, index, weights)
     best = np.argsort(-scores, kind="stable")[:top_k]
     return [
         Match(index.listings[i], round(float(np.clip(scores[i], 0.0, 1.0)) * 100, 1)) for i in best

@@ -6,6 +6,7 @@ scripts/build_embeddings.py encodes every listing once and saves data/embeddings
 
 from __future__ import annotations
 
+import hashlib
 import os
 import re
 from collections.abc import Callable, Iterator
@@ -35,7 +36,21 @@ CUT_TO_FIT = {
     "long": "longline",
     "cropped": "cropped",
 }
-MATERIAL_ALIASES = {"poly": "polyester", "nylone": "nylon", "polyamide": "nylon"}
+# Dataset materials are partly Scandinavian or truncated ("100% bomull", "73% Poly"). Synthetic
+# leather maps to leather, matching the "faux leather" synonym in attributes.yaml.
+MATERIAL_ALIASES = {
+    **dict.fromkeys(["poly", "polyster"], "polyester"),
+    **dict.fromkeys(["nylone", "nylo", "polyamide", "polyamid"], "nylon"),
+    **dict.fromkeys(["bomull", "cott"], "cotton"),
+    **dict.fromkeys(["ull", "lana", "lambswool"], "wool"),
+    **dict.fromkeys(["akryl", "acryl", "acry", "acrylics", "modacrylic"], "acrylic"),
+    **dict.fromkeys(["viskos", "viscos"], "viscose"),
+    "silke": "silk",
+    "lin": "linen",
+    **dict.fromkeys(
+        ["pu", "pu leather", "polyurethane", "polyuretan", "shell imitation leather"], "leather"
+    ),
+}
 # Pattern labels that say nothing visible about the garment.
 UNINFORMATIVE_PATTERNS = {"other", "plain"}
 
@@ -64,28 +79,49 @@ def _main_material(material: str | None) -> str | None:
         word = max(shares, key=lambda share: int(share[0]))[1]
     else:
         word = " ".join(re.findall(r"[a-z]+", text)[:3])
+    if word.startswith("unknown"):
+        return None
     word = MATERIAL_ALIASES.get(word, word)
     return _synonyms()["fabric"].get(word, word) or None
+
+
+@dataclass(frozen=True)
+class ListingLabels:
+    """A listing's dataset labels mapped onto our vocabulary where possible."""
+
+    colors: list[str]
+    pattern: str | None
+    fabric: str | None
+    fits: list[str]
+    garment: str
+
+
+def listing_labels(listing: dict[str, Any]) -> ListingLabels:
+    attributes = listing.get("attributes") or {}
+    color_synonyms = _synonyms()["color"]
+    pattern = (clean_text(attributes.get("pattern")) or "").lower()
+    # parse_colors is the dataset's generic list-cell parser; cut cells look like "['Regular']".
+    cuts = parse_colors(attributes.get("cut"))
+    return ListingLabels(
+        colors=[color_synonyms.get(c.lower(), c.lower()) for c in attributes.get("colors") or []],
+        pattern=None if pattern in UNINFORMATIVE_PATTERNS or not pattern else pattern,
+        fabric=_main_material(attributes.get("material")),
+        fits=[CUT_TO_FIT[c.lower()] for c in cuts if c.lower() in CUT_TO_FIT],
+        garment=(clean_text(attributes.get("type")) or listing.get("title") or "jacket").lower(),
+    )
 
 
 def listing_text(listing: dict[str, Any]) -> str:
     """Describe a listing in the same words the query side uses, e.g.
     'a photo of a gray striped viscose regular fit blazer.'"""
-    attributes = listing.get("attributes") or {}
-    color_synonyms = _synonyms()["color"]
-    colors = [color_synonyms.get(c.lower(), c.lower()) for c in attributes.get("colors") or []]
-    pattern = (clean_text(attributes.get("pattern")) or "").lower()
-    # parse_colors is the dataset's generic list-cell parser; cut cells look like "['Regular']".
-    cuts = parse_colors(attributes.get("cut"))
-    fits = [CUT_TO_FIT[c.lower()] for c in cuts if c.lower() in CUT_TO_FIT]
-    garment = (clean_text(attributes.get("type")) or listing.get("title") or "jacket").lower()
+    labels = listing_labels(listing)
     return photo_caption(
         [
-            " and ".join(colors[:2]),
-            "" if pattern in UNINFORMATIVE_PATTERNS else pattern,
-            _main_material(attributes.get("material")) or "",
-            fits[0] if fits else "",
-            garment,
+            " and ".join(labels.colors[:2]),
+            labels.pattern or "",
+            labels.fabric or "",
+            labels.fits[0] if labels.fits else "",
+            labels.garment,
         ]
     )
 
@@ -130,6 +166,11 @@ def _batches(items: list, size: int) -> Iterator[tuple[int, list]]:
         yield start, items[start : start + size]
 
 
+def text_signature(listings: list[dict[str, Any]]) -> str:
+    """Fingerprint of the listing texts, so an index built from older texts is detected."""
+    return hashlib.sha256("\n".join(map(listing_text, listings)).encode()).hexdigest()
+
+
 def save_index(index: ListingIndex, path: Path = DEFAULT_INDEX) -> None:
     """Write atomically, so a crash mid-save never leaves a half-written index behind."""
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -141,6 +182,7 @@ def save_index(index: ListingIndex, path: Path = DEFAULT_INDEX) -> None:
             image=index.image_embeddings,
             text=index.text_embeddings,
             model_name=np.array(index.model_name),
+            text_signature=np.array(text_signature(index.listings)),
         )
     os.replace(staging, path)
 
@@ -159,6 +201,7 @@ def load_index(
         ids = [str(i) for i in saved["ids"]]
         image, text = saved["image"], saved["text"]
         saved_model = str(saved["model_name"])
+        saved_signature = str(saved["text_signature"]) if "text_signature" in saved else None
     if saved_model != model_name:
         raise ValueError(
             f"{path} was built with {saved_model}, but MODEL_NAME is {model_name}; "
@@ -171,7 +214,13 @@ def load_index(
         raise ValueError(
             f"{path} does not match {listings_path}; rebuild it with scripts/build_embeddings.py."
         )
-    return ListingIndex([by_id[i] for i in ids], image, text, saved_model)
+    listings = [by_id[i] for i in ids]
+    if saved_signature != text_signature(listings):
+        raise ValueError(
+            f"{path} was built from older listing texts; "
+            "rebuild it with scripts/build_embeddings.py."
+        )
+    return ListingIndex(listings, image, text, saved_model)
 
 
 @lru_cache(maxsize=1)
