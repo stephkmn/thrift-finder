@@ -114,9 +114,10 @@
   transform: translateY(-3px) rotate(0deg);
 }
 
+/* Not positioned on purpose: the photo button's click area (below) has to reach past this box,
+   which clips only the descendants it positions. */
 .photo {
   grid-area: photo;
-  position: relative;
   aspect-ratio: 4 / 5;
   overflow: hidden;
   background: var(--color-frame);
@@ -137,6 +138,15 @@
   border: 0;
   background: none;
   cursor: pointer;
+}
+
+/* The whole polaroid is the click target, not just the photo: the button's click area is
+   stretched over the card. It stays one button for keyboard and screen-reader users. */
+.photoButton::after {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  inset: 0;
 }
 
 /* .photo clips its contents, so draw the focus ring around the whole polaroid instead. */
@@ -240,7 +250,10 @@
   color: var(--color-text-muted);
 }
 
+/* Above the card's click area, so View listing still opens the listing itself. */
 .link {
+  position: relative;
+  z-index: 2;
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);

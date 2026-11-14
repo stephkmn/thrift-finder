@@ -62,9 +62,11 @@ page").
   hover, so there the source badge and **View listing** sit under the caption instead. The switch is CSS only
   (`@media (hover: hover) and (pointer: fine)`): the details exist once in the page, and screen readers read
   them in the same order either way.
-- **Click → details page.** `ResultsGrid` takes an optional `onOpenDetails(id)`. When it is passed, each photo
-  becomes a button ("See details: <title>") and the overlay shows a "See details" hint under **View listing**. `UploadPage`
-  passes it since S3-6, so every photo opens its details page.
+- **Click → details page.** `ResultsGrid` takes an optional `onOpenDetails(id)`. When it is passed, the whole
+  polaroid opens the details page: the photo is a button ("See details: <title>") whose click area is
+  stretched over the card, and **View listing** stays a separate link on top of it. The overlay shows a "See
+  details" hint under **View listing**. `UploadPage` passes it since S3-6, so every polaroid opens its details
+  page.
 
 Screenshots (mock data): `docs/screenshots/s3-5-board-desktop.png` (1440×900 window),
 `s3-5-board-hover.png`, and `s3-5-board-phone.png`.
