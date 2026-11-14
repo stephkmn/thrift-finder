@@ -116,7 +116,8 @@ thrift-finder/
 | Ingestion pipeline (eBay + local) | Planned (S2-2, Member B) |
 | `POST /api/search` with re-ranker | Planned (S2-5) |
 | Attribute editor + results grid in UI | Partial (S2-6, S2-7 — UI done against mock search; real /api/search pending S2-5) |
-| Pinterest/polaroid board + details page | Planned (S3-5, S3-6) |
+| Pinterest/polaroid board (frames, hover-to-blur overlay) | Done (S3-5); click → details page is wired in S3-6 |
+| Details page + `GET /api/item/{id}` | Planned (S3-6) |
 | Preliminary results + evaluation | Planned (S3-1…3) |
 | `scripts/reproduce_sample.py` + samples | Planned (S4) |
 
