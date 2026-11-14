@@ -63,13 +63,39 @@ page").
   (`@media (hover: hover) and (pointer: fine)`): the details exist once in the page, and screen readers read
   them in the same order either way.
 - **Click → details page.** `ResultsGrid` takes an optional `onOpenDetails(id)`. When it is passed, each photo
-  becomes a button ("See details: <title>") and the overlay shows a "See details" hint under **View listing**. `UploadPage` does
-  not pass it yet, so photos are not clickable until S3-6 adds the details page.
+  becomes a button ("See details: <title>") and the overlay shows a "See details" hint under **View listing**. `UploadPage`
+  passes it since S3-6, so every photo opens its details page.
 
 Screenshots (mock data): `docs/screenshots/s3-5-board-desktop.png` (1440×900 window),
 `s3-5-board-hover.png`, and `s3-5-board-phone.png`.
 
-**Planned next** (see `docs/PHASE2_SPRINT_PLAN.md`): details page (S3-6), which passes `onOpenDetails`.
+**Built in S3-6:** clicking a polaroid opens that listing's details page.
+
+- **Navigation.** The page lives at `/item/<id>` (`src/lib/route.ts`, the browser's History API, no router
+  library). The browser's Back button and the page's **Back to results** link both return to the board, which
+  stays in memory while the details are open: same results, same edits, same scroll position, and focus back on
+  the photo you opened. A details URL opened directly or after a reload shows **Back to search** instead.
+- **Layout.** The photo as a large polaroid with its match stamp, beside the source badge, title, and price (or
+  "Price unavailable"). Two columns from 48rem, stacked on phones.
+- **Archive items** load `GET /api/item/{id}` with the attributes of the search that produced the board:
+  - **Why it matched**: each searched attribute (category, color, fabric, fit) next to the listing's label,
+    marked Matches, Different, or Not labeled. The backend maps the dataset's labels onto our vocabulary and
+    judges matches the same way `scripts/evaluate.py` does. A note explains that the score also weighs how
+    alike the photos look.
+  - **From the dataset**: the dataset's own labels (type, category, colors, material, cut, pattern, brand),
+    leaving out missing ones.
+  - The CC BY 4.0 credit, linked to the dataset on Hugging Face.
+- **eBay items** use only the search result already in the browser (photo, title, price, match score, and
+  **View listing on eBay**). There is no backend or eBay call and nothing is stored, because the eBay
+  exemption doesn't allow keeping eBay data.
+- **States.** A loading placeholder, an error with **Retry**, and "This listing isn't available" when a
+  details URL points to something the archive doesn't have (for example, a reloaded eBay listing).
+
+Screenshots (mock data): `docs/screenshots/s3-6-details-archive-desktop.png`, `s3-6-details-ebay-desktop.png`,
+`s3-6-details-archive-phone.png`, and `s3-6-details-reload-desktop.png`.
+
+**Planned next:** a notice when eBay fails and the archive answers instead (needs a new `SearchResponse`
+field; follow-up to PR #20).
 
 The request/response types in `src/api/types.ts` are a **draft** of the S1-4 API contract and must be confirmed
 against the backend's Pydantic schemas. `price` and `listing_url` are always present but `null` for local
@@ -171,16 +197,16 @@ In mock mode, type one of these as the description (exactly, with nothing else):
 
 ## File map
 
-| Path                          | Contents                                                                                 |
-| ----------------------------- | ---------------------------------------------------------------------------------------- |
-| `src/main.tsx`, `src/App.tsx` | Entry point and app shell (header + upload page)                                         |
-| `src/api/`                    | Draft contract types, `ApiError`, and `extract()` / `search()` with the live/mock switch |
-| `src/api/mocks/`              | Extract fixture, mock search pool and ranking, error triggers                            |
-| `src/components/`             | `UploadForm`, `DropZone`, `UploadSummary`, `AttributeEditor`, `ResultsGrid`              |
-| `src/pages/`                  | `UploadPage`: extract, editor, and search state (one page, no router)                    |
-| `src/lib/`                    | Vocabulary loader, color swatches, attribute comparison, `useObjectUrl`, image checks    |
-| `src/styles/`                 | `global.css`: design tokens (colors, spacing, type) and resets                           |
-| `src/test/`                   | Vitest setup and tests                                                                   |
+| Path                          | Contents                                                                                                            |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `src/main.tsx`, `src/App.tsx` | Entry point and app shell (header + upload page)                                                                    |
+| `src/api/`                    | Contract types, `ApiError`, and `extract()` / `search()` / `getItem()` with the live/mock switch                    |
+| `src/api/mocks/`              | Extract fixture, mock search pool and ranking, mock item details, error triggers                                    |
+| `src/components/`             | `UploadForm`, `DropZone`, `UploadSummary`, `AttributeEditor`, `ResultsGrid`                                         |
+| `src/pages/`                  | `UploadPage`: extract, editor, and search state; `DetailsPage`: one listing (S3-6)                                  |
+| `src/lib/`                    | Vocabulary loader, color swatches, attribute comparison, `useObjectUrl`, image checks, `route.ts` (board ↔ details) |
+| `src/styles/`                 | `global.css`: design tokens (colors, spacing, type) and resets                                                      |
+| `src/test/`                   | Vitest setup and tests                                                                                              |
 
 ## Privacy
 
@@ -198,8 +224,10 @@ the console.
   sale)"), because the fallback dataset has neither (`docs/DATA.md`).
 - The description is sent with every search but cannot be edited in the editor; use **Edit upload**.
 - HEIC/HEIF photos (the iPhone default) are rejected. Export them as JPG first.
-- Polaroid photos are not clickable until S3-6 adds the details page. Until then, an archive item has nothing
-  to focus with the keyboard, so keyboard users can't open its hover overlay; the only detail it hides is the
-  "Archive (not for sale)" badge, which screen readers still read.
+- Details pages live only as long as the current results: nothing is saved, so after a reload or a new
+  search, an eBay listing's page says it isn't available, and an archive listing's page has no "why it
+  matched" comparison.
+- "Why it matched" compares category, color, fabric, and fit only. Listings have no labels for other features
+  (hood, zipper, …), and eBay listings have no labels at all.
 - The contract types are a draft until Members A and C confirm them.
 - TypeScript is pinned to 6.0 because `typescript-eslint` does not support TypeScript 7 yet.
