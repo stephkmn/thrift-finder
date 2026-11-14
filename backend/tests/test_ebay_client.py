@@ -10,7 +10,8 @@ import urllib.request
 
 import pytest
 
-from backend.app.data.ebay_client import EbayAPIError, EbayBrowseClient
+from backend.app.data import ebay_client
+from backend.app.data.ebay_client import EbayAPIError, EbayBrowseClient, fetch_listing_image
 
 
 class Response(io.BytesIO):
@@ -148,3 +149,96 @@ def test_normalize_rejects_invalid_prices(value):
     result = EbayBrowseClient._normalize(item)
 
     assert result["price"] is None
+
+def test_http_error_keeps_status_code_for_fallback(monkeypatch):
+    def rate_limited(_request, *, timeout):
+        raise urllib.error.HTTPError("https://example.com", 429, "Too Many", None, None)
+
+    monkeypatch.setattr(urllib.request, "urlopen", rate_limited)
+    with pytest.raises(EbayAPIError) as err:
+        EbayBrowseClient("id", "secret").search("coat")
+    assert err.value.status_code == 429
+
+
+def test_connection_error_has_no_status_code(monkeypatch):
+    def offline(_request, *, timeout):
+        raise urllib.error.URLError("offline")
+
+    monkeypatch.setattr(urllib.request, "urlopen", offline)
+    with pytest.raises(EbayAPIError) as err:
+        EbayBrowseClient("id", "secret").search("coat")
+    assert err.value.status_code is None
+
+
+def _token_then_items(monkeypatch, expires_in):
+    seen = []
+
+    def fake_open(request, *, timeout):
+        seen.append(request.full_url)
+        if "oauth2/token" in request.full_url:
+            return Response({"access_token": "token", "expires_in": expires_in})
+        return Response({"itemSummaries": []})
+
+    monkeypatch.setattr(urllib.request, "urlopen", fake_open)
+    return seen
+
+
+def test_token_is_reused_in_memory_until_expiry(monkeypatch):
+    seen = _token_then_items(monkeypatch, 7200)
+    client = EbayBrowseClient("id", "secret")
+    client.search("coat")
+    client.search("parka")
+    assert sum("oauth2/token" in url for url in seen) == 1
+
+    monkeypatch.setattr(ebay_client.time, "monotonic", lambda: 10**9)
+    client.search("coat")
+    assert sum("oauth2/token" in url for url in seen) == 2
+
+
+def test_token_without_lifetime_is_not_reused(monkeypatch):
+    seen = _token_then_items(monkeypatch, None)
+    client = EbayBrowseClient("id", "secret")
+    client.search("coat")
+    client.search("coat")
+    assert sum("oauth2/token" in url for url in seen) == 2
+
+
+class ImageResponse(io.BytesIO):
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_):
+        self.close()
+
+
+def test_listing_image_is_downloaded_from_ebay_cdn(monkeypatch):
+    monkeypatch.setattr(
+        urllib.request, "urlopen", lambda _request, *, timeout: ImageResponse(b"jpeg-bytes")
+    )
+    assert fetch_listing_image("https://i.ebayimg.com/images/g/x/s-l225.jpg") == b"jpeg-bytes"
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "http://i.ebayimg.com/images/a.jpg",
+        "https://example.com/a.jpg",
+        "https://i.ebayimg.com.evil.example/a.jpg",
+        "file:///etc/passwd",
+        "",
+    ],
+)
+def test_listing_image_rejects_non_ebay_urls_without_network(url, monkeypatch):
+    def fail(*_args, **_kwargs):
+        raise AssertionError("Network should not be called")
+
+    monkeypatch.setattr(urllib.request, "urlopen", fail)
+    with pytest.raises(EbayAPIError, match="not hosted on eBay"):
+        fetch_listing_image(url)
+
+
+def test_oversized_listing_image_rejected(monkeypatch):
+    big = b"x" * (ebay_client.MAX_IMAGE_BYTES + 1)
+    monkeypatch.setattr(urllib.request, "urlopen", lambda _r, *, timeout: ImageResponse(big))
+    with pytest.raises(EbayAPIError, match="too large"):
+        fetch_listing_image("https://i.ebayimg.com/a.jpg")
