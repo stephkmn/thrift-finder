@@ -185,10 +185,7 @@ export function DetailsPage({ id, result, searched, onBack }: DetailsPageProps) 
           <h2 id={titleId} ref={headingRef} tabIndex={-1} className={styles.title}>
             This listing is no longer available
           </h2>
-          <p>
-            eBay listings are not stored.
-            Please start a new search to find this listing again.
-          </p>
+          <p>eBay listings are not stored. Please start a new search to find this listing again.</p>
         </div>
       </article>
     );
