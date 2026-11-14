@@ -6,7 +6,9 @@ React + TypeScript + Vite app for Thrift Searcher (CECS 451, Group 7). Owner: Me
 
 **Built in S1-9:**
 
-- Upload page: add a photo (drag-and-drop or file picker), an optional text description, or both.
+- Upload page: add a photo (drag-and-drop, file picker, or paste a copied image or screenshot), an optional
+  text description, or both. Pasting works anywhere on the upload page, or in the description box on a phone;
+  pasted text still goes into the description, and a pasted image goes through the same checks as a picked one.
 - Client-side photo checks: JPG, PNG, or WebP only, 10 MB max, with a specific hint for iPhone HEIC photos.
 - `extract()` API client for `POST /api/extract`, with a mock mode so the UI works before the backend exists.
 

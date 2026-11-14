@@ -1,6 +1,7 @@
-import { useId, useState } from 'react';
+import { useEffect, useEffectEvent, useId, useRef, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import type { ExtractInput } from '../../api/client';
+import { imageFromClipboard } from '../../lib/clipboardImage';
 import { validateImage } from '../../lib/validateImage';
 import { DropZone } from '../DropZone/DropZone';
 import styles from './UploadForm.module.css';
@@ -39,6 +40,24 @@ export function UploadForm({
     if (!problem) setImage(file);
   };
 
+  // Paste a copied image or screenshot anywhere on the page (or into the description box on a
+  // phone). Pasted text still goes into the description as usual.
+  const formRef = useRef<HTMLFormElement>(null);
+  const handlePaste = useEffectEvent((event: ClipboardEvent) => {
+    // The form stays mounted but hidden while a details page is open; don't change it then.
+    if (!formRef.current || formRef.current.closest('[hidden]')) return;
+    const image = imageFromClipboard(event.clipboardData);
+    if (!image) return;
+    event.preventDefault();
+    handleFileChosen(image);
+  });
+  useEffect(() => {
+    if (disabled) return;
+    const listener = (event: ClipboardEvent) => handlePaste(event);
+    document.addEventListener('paste', listener);
+    return () => document.removeEventListener('paste', listener);
+  }, [disabled]);
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!canSubmit) return;
@@ -46,7 +65,7 @@ export function UploadForm({
   };
 
   return (
-    <form className={styles.form} onSubmit={handleSubmit} noValidate>
+    <form ref={formRef} className={styles.form} onSubmit={handleSubmit} noValidate>
       {intro && <div className={styles.intro}>{intro}</div>}
 
       <fieldset className={styles.photo} disabled={disabled}>
