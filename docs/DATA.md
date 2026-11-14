@@ -183,7 +183,7 @@ Local archival results use `source: "local"` and do not contain verified sale pr
 
 FashionCLIP embedding/index generation is implemented separately in `scripts/build_embeddings.py` and `backend/app/ml/`. The ingestion pipeline provides photographs and metadata; it does not generate embedding vectors itself.
 
-The schema also requires a `match_score` between 0 and 100. The standalone eBay client does not generate FashionCLIP similarity scores, so score generation and mapping must be coordinated with the Backend and ML Leads.
+The schema also requires a `match_score` between 0 and 100. eBay keyword search has no similarity score, so `backend/app/ml/live_search.py` downloads each candidate's thumbnail and embeds it and the title with FashionCLIP **in memory**, then ranks it with the same calibrated formula as the local index. Nothing from eBay is written to disk.
 
 The ML pipeline generates and caches image/text embeddings separately using FashionCLIP. The ingestion pipeline produces local images and metadata, not similarity scores.
 

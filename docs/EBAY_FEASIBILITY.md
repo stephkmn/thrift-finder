@@ -132,25 +132,19 @@ Successful Sandbox and Production API requests demonstrate technical access at t
 
 Review [eBay's Buy API production requirements](https://developer.ebay.com/api-docs/buy/buy-requirements.html) before deploying the live integration.
 
-## Integration Boundary
+## Integration (S3-7)
 
-The eBay client is currently an **isolated feasibility prototype**, not an implementation of the application's `/api/search` endpoint.
+The client is connected to `POST /api/search` when `DATA_SOURCE=ebay`:
 
-The client can retrieve and normalize live secondhand clothing listings, but it is not yet connected to the frontend or FashionCLIP ranking pipeline.
+- Edited attributes become keywords; up to 20 used listings are requested.
+- Thumbnails (HTTPS `*.ebayimg.com` only, ≤ 5 MB) and titles are embedded with FashionCLIP **in memory** and ranked with the same calibrated score as the local index (`backend/app/ml/live_search.py`).
+- Results carry the real USD price, eBay image URL and listing URL, with `source: "ebay"`.
+- The OAuth token is reused from memory until shortly before expiry; nothing is written to disk or logs.
+- Rate limiting (429), other eBay failures, or no usable results fall back to the 500-item licensed local dataset (`docs/SEARCH_FALLBACK.md`).
 
-The Backend Lead is responsible for coordinating search endpoint integration and any necessary result-score mapping.
+Verified on November 13, 2026 against Production: "brown leather bomber jacket" returned 10 used listings with prices and links in about 2–3 s, and editing color to black returned black bomber jackets. An invalid secret fell back to local results.
 
-The existing licensed dataset of 500 outerwear garments will remain available as a reliable local search fallback.
-
-## Remaining Integration Steps
-
-1. Coordinate with the Backend Lead before connecting the eBay client to `/api/search`.
-2. Integrate live listing retrieval into the application's search workflow.
-3. Ensure eBay data remains in memory and is not persistently stored.
-4. Preserve the independent 500-item licensed local dataset as a fallback.
-5. Validate listing metadata, image URLs, prices, and purchase links during integration.
-6. Test API failures, empty results, and local fallback behavior.
-7. Review applicable eBay production-use requirements before deployment.
+Still to do before any public deployment: review eBay's production-use requirements (link above).
 
 ## S1-1 Feasibility Outcome
 

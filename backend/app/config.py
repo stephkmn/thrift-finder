@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     query_cache_max_entries: int = Field(default=256, gt=0)
     ebay_client_id: str | None = None
     ebay_client_secret: str | None = Field(default=None, repr=False)
+    ebay_environment: Literal["sandbox", "production"] = "production"
 
 
 def get_settings() -> Settings:

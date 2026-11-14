@@ -48,7 +48,10 @@ def read_labels(path: Path) -> list[dict]:
             row["others"] = others if cell else None
             row["image"] = path.parent / row["image"]
             rows.append(row)
-    return rows
+    missing = [row["image"].name for row in rows if not row["image"].is_file()]
+    if missing:
+        print(f"Skipping {len(missing)} photos that aren't on this machine: {missing}")
+    return [row for row in rows if row["image"].is_file()]
 
 
 OTHERS_METRICS = ("others precision", "others recall", "others F1")
