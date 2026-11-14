@@ -1,5 +1,12 @@
 import { ApiError } from '../errors';
-import type { Attributes, ExtractResponse, SearchRequest, SearchResponse } from '../types';
+import type {
+  Attributes,
+  AttributeComparison,
+  ExtractResponse,
+  ItemDetails,
+  SearchRequest,
+  SearchResponse,
+} from '../types';
 import fixture from './extract.json';
 import { MOCK_POOL } from './searchPool';
 import type { MockListing } from './searchPool';
@@ -82,4 +89,48 @@ export async function mockSearch(request: SearchRequest): Promise<SearchResponse
     throw new ApiError(500, 'Something went wrong while finding matches. Please try again.');
   }
   return rankListings(MOCK_POOL, request.edited_attributes);
+}
+
+function capitalize(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+/**
+ * GET /api/item/{id} in mock mode. Like the backend, only archive (`local`) items have details;
+ * mock eBay items and unknown ids are 404. Mock labels are already in our vocabulary, so a
+ * match is plain equality.
+ */
+export async function mockGetItem(id: string, searched?: Attributes): Promise<ItemDetails> {
+  await wait(mockDelayMs());
+  const listing = MOCK_POOL.find((item) => item.id === id && item.source === 'local');
+  if (!listing) throw new ApiError(404, "This listing isn't available anymore.");
+  const { attributes } = listing;
+  const comparison: AttributeComparison[] = searched
+    ? SCALARS.map((name) => ({
+        attribute: name,
+        yours: searched[name],
+        listing: attributes[name],
+        match: attributes[name] === searched[name],
+      }))
+    : [];
+  return {
+    id: listing.id,
+    title: listing.title,
+    image_url: listing.image_url,
+    source: 'local',
+    dataset_labels: {
+      type: capitalize(attributes.category),
+      category: null,
+      colors: [capitalize(attributes.color)],
+      material: attributes.fabric,
+      cut: capitalize(attributes.fit.replace(' fit', '')),
+      pattern: null,
+      brand: null,
+    },
+    comparison,
+    credit: {
+      text: 'Second-Hand Fashion dataset, Nauman (2024), CC BY 4.0. Photo resized.',
+      url: 'https://huggingface.co/datasets/fnauman/fashion-second-hand-front-only-rgb',
+    },
+  };
 }

@@ -1,6 +1,12 @@
 import { ApiError } from './errors';
-import { mockExtract, mockSearch } from './mocks/mockApi';
-import type { ExtractResponse, SearchRequest, SearchResponse } from './types';
+import { mockExtract, mockGetItem, mockSearch } from './mocks/mockApi';
+import type {
+  Attributes,
+  ExtractResponse,
+  ItemDetails,
+  SearchRequest,
+  SearchResponse,
+} from './types';
 
 export { ApiError } from './errors';
 
@@ -85,5 +91,33 @@ export async function search(searchRequest: SearchRequest): Promise<SearchRespon
       body: JSON.stringify(searchRequest),
     },
     searchMessageForStatus,
+  );
+}
+
+function itemMessageForStatus(status: number): string {
+  if (status === 404) return "This listing isn't available anymore.";
+  return 'Something went wrong while loading this listing. Please try again.';
+}
+
+/**
+ * GET /api/item/{id} — an archive listing's details. Pass the attributes of the search that
+ * found it to get the "why it matched" comparison.
+ */
+export async function getItem(id: string, searched?: Attributes): Promise<ItemDetails> {
+  if (mocksEnabled()) {
+    return mockGetItem(id, searched);
+  }
+
+  const params = new URLSearchParams();
+  if (searched) {
+    for (const name of ['category', 'color', 'fabric', 'fit'] as const) {
+      params.set(name, searched[name]);
+    }
+  }
+  const query = params.toString();
+  return request<ItemDetails>(
+    `/api/item/${encodeURIComponent(id)}${query ? `?${query}` : ''}`,
+    { method: 'GET' },
+    itemMessageForStatus,
   );
 }
