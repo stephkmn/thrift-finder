@@ -186,7 +186,7 @@ export function DetailsPage({ id, result, searched, onBack }: DetailsPageProps) 
             This listing is no longer available
           </h2>
           <p>
-            eBay listings are not stored, so they can only be opened from the current results.
+            eBay listings are not stored.
             Please start a new search to find this listing again.
           </p>
         </div>
