@@ -117,11 +117,12 @@ scalars:
       - oversized
       - cropped
       - longline
-    # Most jackets are regular fit, but "regular" isn't a visual cue, so zero-shot rarely picks it.
-    # Report another fit only at >= 0.9 confidence: on the 461 train listings with a fit label,
-    # this raised fit accuracy from 25% to 85% and still found 5 of the 15 non-regular ones.
+    # Most jackets are regular fit, but "regular" isn't a visual cue, so zero-shot rarely picks it,
+    # and its non-regular calls are mostly wrong. Report another fit only at >= 0.99 confidence.
+    # On the 461 train listings with a fit label: always "regular fit" scores 97%, plain argmax
+    # 25%, this rule 96% (9 non-regular calls, 3 right). Fit is a known zero-shot limitation.
     default: regular fit
-    min_confidence: 0.9
+    min_confidence: 0.99
     synonyms:
       slim: slim fit
       fitted: slim fit

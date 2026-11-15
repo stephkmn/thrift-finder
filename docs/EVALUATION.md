@@ -194,3 +194,119 @@ and checks the rest against the photo.
 Dataset photos: Nauman, F. (2024). *Clothing Dataset for Second-Hand Fashion* (Version 3). Zenodo.
 https://doi.org/10.5281/zenodo.13788681. CC BY 4.0. Credit the dataset wherever its images appear
 (report, screenshots, UI).
+
+## S3-1 / S3-2 / S3-3: results on the S1-11 set
+
+**Date:** Nov 14, 2026 · **Owner:** Member A · **Script:** `scripts/evaluate.py` (scoring in
+`backend/app/ml/evaluation.py`) · FashionCLIP, float64 on a laptop CPU
+
+These results replace the preliminary Openverse numbers above. **33 of the 38 queries were run:**
+the 30 dataset photos and the 3 own photos committed in `samples/`. The other 5 own photos are only
+on Member D's machine (`data/eval/own/`, gitignored); the script skips them, and they will be added
+when re-run there.
+
+### Attribute extraction
+
+| Attribute | Dataset (30) | Own (3) | All (33) | Base CLIP, all (33) |
+|---|---|---|---|---|
+| category | 77% | 100% | **79%** | 48% |
+| color | 60% | 100% | **64%** | 52% |
+| fabric | 50% | 33% | **48%** | 32% |
+| fit | 83% | 100% | 84% | 84% |
+| others precision / recall / F1 | 54% / 44% / 48% | 75% / 38% / 50% | **56% / 43% / 48%** | 44% / 43% / 43% |
+
+- FashionCLIP beats base CLIP on category, color, fabric, and features. Base CLIP column:
+  `python scripts/zero_shot_accuracy.py eval/labels.csv`.
+- **Fit can't be read reliably zero-shot.** Always answering "regular fit" scores **84%** on these
+  queries (27 of 32 labels) and **97%** on the 461 labeled train listings. Plain argmax scored 22%
+  here: "regular" isn't a visual cue, so the model almost never picks it, and its other calls are
+  mostly wrong. No confidence threshold makes them reliable: on the train listings, at most about
+  1 in 3 non-regular calls is right.
+- So fit reports a value other than "regular fit" only at ≥ 0.99 confidence (`default` /
+  `min_confidence` in `attributes.yaml`), chosen on the train listings (96% vs. the 97% baseline;
+  9 non-regular calls, 3 right). On these queries it scores 84%, the same as the baseline: 2
+  non-regular calls, 1 right, finding 1 of the 5 non-regular jackets. Fit is listed as a limitation.
+
+### Search with edits (baselines: S3-3)
+
+For each query, the attributes are extracted from the photo, the query's intended edit is applied
+(e.g. color → brown), and three systems return their top 10 from the 500-listing index:
+
+- **keyword:** Member B's keyword-only baseline (`backend/app/data/keyword_baseline.py`) on the
+  edited attributes; no model
+- **image only:** the photo's embedding with the edit ignored
+- **image + edit:** the full system (edit arithmetic + re-ranker)
+
+| System | Edit-satisfaction | Type match@10 | Label-based P@10 |
+|---|---|---|---|
+| keyword | 62% | 71% | 43% |
+| image only | 16% | 88% | 14% |
+| **image + edit** | **72%** | **85%** | **59%** |
+
+All 33 queries; the edit metrics cover the 27 color/fabric/fit edits. By source:
+
+| System | Dataset (30): edit-sat. / type / P@10 | Own (3): edit-sat. / type / P@10 |
+|---|---|---|
+| keyword | 61% / 74% / 44% | 70% / 43% / 35% |
+| image only | 17% / 90% / 15% | 0% / 77% / 0% |
+| image + edit | 71% / 86% / 60% | 95% / 70% / 50% |
+
+- **Edit-satisfaction:** share of the top 10 whose dataset label has the edited value (results
+  without that label are skipped). Our colors the dataset doesn't label count by family: navy →
+  Blue, olive → Green, cream → White or Beige, burgundy → Red.
+- **Type match@10:** share of the 10 slots holding the query's garment type. The dataset's types are
+  coarser than our categories, so each category maps to the types it can be filed under
+  (`CATEGORY_TYPES` in `evaluation.py`; e.g. parka → Winter Jacket or Jacket, since S1-11 labeling
+  found parkas typed "Jacket").
+- **Label-based P@10:** an automatic, label-based stand-in for the plan's P@10, which is defined as
+  team-judged relevance. A result counts when its dataset labels show both the query's garment type
+  and the edited value; nobody looked at the results. The team labels only the 38 query photos, so
+  there is no team-judged P@10. (`--judging-sheet` / `--judged` support one if that changes.)
+- **Feature edits (9) are not scored:** listings have no `others` labels.
+- **Reading it:** only image + edit gets both the edit and the garment type right. Keyword search
+  follows the edit but drifts off the garment type; image only keeps the type but ignores the edit.
+- **Latency:** extract ~110 ms, search ~45 ms (medians).
+
+### Tuning (S3-1)
+
+`python scripts/evaluate.py --sweep` tries edit strength λ ∈ {0, 0.5, 1, 1.5, 2} with four weight
+settings. Selected rows (all 33 queries):
+
+| λ | Weights (w1, w2, w3) | Edit-satisfaction | Type match@10 | Label-based P@10 |
+|---|---|---|---|---|
+| 0.0 | (0.5, 0.3, 0.2) | 58% | 88% | 49% |
+| **1.0** | **(0.5, 0.3, 0.2)** (current) | **72%** | **85%** | **59%** |
+| 1.0 | (0.3, 0.4, 0.3) | 74% | 85% | 62% |
+| 1.5 | (0.3, 0.4, 0.3) (best) | 75% | 85% | 63% |
+| 0.0 | (1.0, 0.0, 0.0) | 18% | 88% | 16% |
+| 2.0 | (1.0, 0.0, 0.0) | 64% | 78% | 46% |
+
+- **Kept λ = 1 and weights (0.5, 0.3, 0.2).** The best setting is 4 points higher on label-based
+  P@10, and one query moves that number by ~4 points (27 scored edits), so the gap is about one
+  query. Switching would fit these photos rather than improve the system. Weights (0.3, 0.4, 0.3)
+  are ahead at every λ, though, so they are the first thing to re-test on a larger query set. See
+  `DECISIONS.md`.
+- Edit arithmetic helps most when the image term dominates: with image-only weights it lifts
+  edit-satisfaction from 18% to 53%. Higher λ trades garment type for the edit (type match 88% → 78%).
+
+### Failure log
+
+The lowest label-based P@10 for image + edit:
+
+| Query | Edit | What happened | Why |
+|---|---|---|---|
+| `ds-10` | fabric leather → suede | 0 of 10 suede | The index has no suede listings, so the edit can't succeed |
+| `ds-29` | fit longline → cropped | 0 of 10 cropped | Only 9 of 500 listings are labeled cropped |
+| `own-05` | color navy → brown (shacket) | 9 of 10 brown, but 7 are blazers | Most brown listings are blazers; the edit outweighs garment type |
+| `ds-14` | color navy → brown (coat) | 7 of 10 blazers, mostly beige or multicolor | Same pull towards blazers, with fewer brown matches |
+| `ds-13` | fabric polyester → wool | 2 of 9 labeled results wool | Extraction already said "wool", so the edit changed nothing and the polyester look stayed |
+
+### Reproduce
+
+```bash
+pip install -e ".[dev,ml,data]"
+python scripts/ingest.py --limit 500             # search index listings (train split)
+python scripts/build_embeddings.py               # ~50 s
+python scripts/ingest.py --split test --limit 300  # evaluation photos (test split)
+python scripts/evaluate.py --sweep --out results.md --details details.csv
+```
