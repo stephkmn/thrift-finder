@@ -44,7 +44,7 @@ flowchart LR
 
 | Component | Path | Owner | Status (Nov 10) |
 |---|---|---|---|
-| React UI | `frontend/src/` | D | Done (S1-9, S2-6, S2-7); search results use a mock until `/api/search` lands |
+| React UI | `frontend/src/` | D | Done (S1-9, S2-6, S2-7, S3-5 polaroid board); search results use a mock until `/api/search` lands |
 | FastAPI app | `backend/app/main.py` | C | Done (this PR) |
 | API contract (schemas) | `backend/app/schemas.py` ↔ `frontend/src/api/types.ts` | C + D | Done (this PR) |
 | Encoder (CLIP / FashionCLIP) | `backend/app/ml/encoder.py` | A | Done (S1-5); wired into `/api/extract` (S2-1) |

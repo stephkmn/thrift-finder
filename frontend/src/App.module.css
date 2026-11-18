@@ -1,8 +1,10 @@
+/* Wide enough for a 5-column board beside the sidebar; the upload form caps its own width. */
 .header,
 .main {
-  max-width: 64rem;
+  max-width: 90rem;
   margin: 0 auto;
-  padding-inline: var(--space-4);
+  /* Roomier side margins on wide screens, like the gutters between the columns. */
+  padding-inline: clamp(var(--space-4), 4vw, var(--space-7));
 }
 
 .header {

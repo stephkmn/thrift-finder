@@ -275,15 +275,16 @@ export function UploadPage() {
 
   return (
     <div className={styles.session}>
-      <UploadSummary
-        input={activeSession.input}
-        queryId={activeSession.extracted.query_id}
-        onEdit={() => dispatch({ type: 'editUpload' })}
-        onStartOver={startOver}
-        headingRef={summaryHeadingRef}
-      />
+      {/* Right-hand column on wide screens: what you gave us, then what we found. */}
+      <div className={styles.sidebar}>
+        <UploadSummary
+          input={activeSession.input}
+          queryId={activeSession.extracted.query_id}
+          onEdit={() => dispatch({ type: 'editUpload' })}
+          onStartOver={startOver}
+          headingRef={summaryHeadingRef}
+        />
 
-      <div className={styles.workspace}>
         <AttributeEditor
           extracted={activeSession.extracted}
           value={attributes}
@@ -305,14 +306,14 @@ export function UploadPage() {
               <p className={styles.pending}>Your results don&rsquo;t include these edits yet.</p>
             )}
         </AttributeEditor>
-
-        <ResultsGrid
-          state={searchState.status === 'idle' ? { status: 'loading' } : searchState}
-          onRetry={() => {
-            if (searchState.status === 'error') void runSearch(searchState.request);
-          }}
-        />
       </div>
+
+      <ResultsGrid
+        state={searchState.status === 'idle' ? { status: 'loading' } : searchState}
+        onRetry={() => {
+          if (searchState.status === 'error') void runSearch(searchState.request);
+        }}
+      />
     </div>
   );
 }
