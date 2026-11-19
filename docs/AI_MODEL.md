@@ -16,6 +16,8 @@ flowchart LR
   Q --> R[Re-ranker over the 500-listing index]
   I[(Listing embeddings, built once)] --> R
   R -->|top 10 + match scores| UI[Results]
+  Q -.->|DATA_SOURCE=ebay| L[Live eBay listings, ranked by the same re-ranker]
+  L -.->|top 10, or local fallback| UI
 ```
 
 ## Model
@@ -32,7 +34,7 @@ denim jacket and the sentence "a photo of a black denim jacket" end up close tog
 similarity). Both tasks rely only on that property. **We did not train or fine-tune the model**; the
 team's work is everything built around it (see [Our contribution](#our-contribution)). Plan §2 chose
 FashionCLIP as primary and base CLIP as the baseline, and the evaluation confirms the choice:
-FashionCLIP is better on category (79% vs. 48%), color, fabric, and features.
+FashionCLIP is better on category (76% vs. 45%), color, fabric, and features.
 
 - Code: `backend/app/ml/encoder.py`. Settings: `MODEL_NAME`, and `MODEL_DTYPE` (`float32` by default;
   `float64` on machines where float32 returns NaN, seen on macOS 14.2. The encoder raises an error
@@ -74,7 +76,7 @@ so the UI only offers values the model knows.
 3. **Fit defaults to "regular fit"** unless another fit reaches 0.99 confidence. Most jackets are
    regular fit, but "regular" isn't a visual cue, so zero-shot rarely chose it (22% fit accuracy),
    and its other fit calls are mostly wrong. The threshold was chosen on the train listings, not on
-   the evaluation queries. The result (84%) only matches always answering "regular fit" (84%), so
+   the evaluation queries. The result (86%) only matches always answering "regular fit" (86%), so
    fit is a limitation rather than something the model reads (`DECISIONS.md`).
 
 **Features (`others`):** a jacket can have several features or none, so each one is an independent
@@ -130,40 +132,54 @@ clipped and × 100, is the match score. Text-only queries drop the first term. A
 scored (the local index is small enough); keyword retrieval is only needed for eBay.
 
 **API entry point:** `search_listings(embedding, kind, original, edited)`, called by `POST /api/search`.
-About 60 ms per search once loaded.
+A search takes tens of milliseconds once loaded; the time depends on the machine (medians of 16 ms
+and 45 ms measured on two laptops, float64 on CPU).
+
+**Live eBay path** (`backend/app/ml/live_search.py`, Member C, with `DATA_SOURCE=ebay` and eBay
+credentials): the edited attributes become keywords (Member B's `query_keywords.py`), the eBay
+Browse API returns up to 20 used listings, and their thumbnails and titles are embedded per request
+and ranked with the same edit-aware query and `score()` as the local index. Nothing is stored. If
+eBay is rate-limited, unavailable, or returns nothing usable, `/api/search` falls back to the local
+index. Differences from
+the local path: the text side of each candidate is its eBay title, not a caption built from
+labels, and the calibration anchors were measured on the local index, so eBay match scores are less
+well calibrated; and each search downloads and encodes the thumbnails, so it is slower.
 
 ## Results (summary)
 
-From [`EVALUATION.md`](EVALUATION.md), on 33 of the 38 S1-11 queries (30 dataset test-split photos
-never in the index, 3 own photos):
+From [`EVALUATION.md`](EVALUATION.md), on all 38 S1-11 queries (30 dataset test-split photos never
+in the index, 8 team photos), searching the local index:
 
 | | Keyword only | Image only | **Image + edit (ours)** |
 |---|---|---|---|
-| Edit-satisfaction (results with the edited value) | 62% | 16% | **72%** |
-| Type match@10 (results of the right garment type) | 71% | 88% | **85%** |
-| Label-based P@10 (both, judged from dataset labels) | 43% | 14% | **59%** |
+| Edit-satisfaction (results with the edited value) | 65% | 15% | **74%** |
+| Type match@10 (results of the right garment type) | 68% | 87% | **83%** |
+| Label-based P@10 (both, judged from dataset labels) | 43% | 13% | **60%** |
 
-Attribute accuracy: category 79%, color 64%, fabric 48%, fit 84% (always "regular fit" also scores
-84%); features precision 56%, recall 43%. Label-based P@10 is an automatic stand-in for the plan's
+Attribute accuracy: category 76%, color 63%, fabric 44%, fit 86% (always "regular fit" also scores
+86%); features precision 59%, recall 43%. Label-based P@10 is an automatic stand-in for the plan's
 team-judged P@10, which wasn't collected.
 
 ## Limitations
 
 - **Zero-shot only.** The model was not trained on our labels. **Fit can't be read**: the answer is
-  almost always the "regular fit" default. Fabric (48%) and features (precision 56%) are also weak: polyester, nylon, and cotton look alike in photos, and `double-breasted`,
-  `quilted`, `embroidery`, and `patches` are over-predicted.
+  almost always the "regular fit" default. Fabric (44%) and features (precision 59%) are also weak:
+  polyester, nylon, and cotton look alike in photos, and `double-breasted`, `quilted`, `embroidery`,
+  and `patches` are over-predicted.
 - **Category vocabulary overlaps.** Generic `jacket` / `coat` compete with specific categories.
 - **An edit can only find what the index has.** There are no suede listings and only 9 cropped ones,
   so those edits fail. With 500 archival listings, a color edit can also pull results towards another
   garment type (navy shacket → brown returned mostly blazers).
 - **Extraction errors carry into search.** If a polyester coat is read as wool, an edit to wool changes
   nothing.
-- **Small, partly automatic evaluation.** 33 queries; relevance is judged from dataset labels, which
+- **Small, partly automatic evaluation.** 38 queries; relevance is judged from dataset labels, which
   are coarse (six garment types, no navy), and no one judged the results by eye. Feature edits
   can't be scored automatically.
 - **Calibration and thresholds are dataset-specific.** The match-score anchors were measured with
-  FashionCLIP on this index; they must be re-measured if the model or data changes.
-- **Not live listings.** The local index is an archival dataset with no prices or purchase links.
+  FashionCLIP on the local index; they must be re-measured if the model or data changes, and they fit
+  live eBay results (ranked on titles) less well.
+- **Only the local index is evaluated.** It is an archival dataset with no prices or purchase links.
+  Live eBay results use the same ranking, but they have no labels, so their quality isn't measured.
 
 ## Our contribution
 
@@ -178,7 +194,7 @@ The pretrained model only turns images and text into vectors. The team built:
 4. **The fit default,** tuned on train data and checked on held-out queries against the
    always-"regular fit" baseline.
 5. **Edit-aware search:** edit arithmetic on CLIP embeddings plus a three-term re-ranker with
-   per-term calibration, so attribute edits move the results (edit-satisfaction 16% → 72%).
+   per-term calibration, so attribute edits move the results (edit-satisfaction 15% → 74%).
 6. **The listing index:** dataset labels mapped onto our vocabulary, material normalization, and
    staleness checks.
 7. **The evaluation harness:** `scripts/evaluate.py` with the keyword and image-only baselines,

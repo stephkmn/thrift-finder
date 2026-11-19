@@ -2,7 +2,7 @@
 
 Short record of team decisions (plan §9): date, decision, reason. Newest first.
 
-## 2026-11-14 — S3-1 tuning: keep λ and weights; fit defaults to "regular fit"
+## 2026-11-18 — S3-1 tuning: keep λ and weights; fit defaults to "regular fit"
 
 **Decision.**
 
@@ -16,16 +16,17 @@ Short record of team decisions (plan §9): date, decision, reason. Newest first.
 
 **Reasons.**
 
-- On the S1-11 set, the best swept setting (λ = 1.5, weights (0.3, 0.4, 0.3)) beat the current one
-  by 4 points of label-based P@10 (63% vs. 59%). With 27 scored edits, one query moves that by ~4
-  points, so the gap is about one query; switching would fit these photos rather than the task.
-  Those weights lead at every λ, so they are the first to re-test on a larger set.
+- On all 38 S1-11 queries, the best swept setting (weights (0.3, 0.4, 0.3), λ = 1.5 or 0.5) beat the
+  current one by 4 points of label-based P@10 (64% vs. 60%). With 29 scored edits, one query moves
+  that by ~3.4 points, so the gap is about one query, and choosing the best of 20 settings on the same
+  queries would overstate it. Those weights lead at every λ (by 2 to 12 points), so they are the first
+  to re-test on a larger set.
 - Zero-shot can't read fit: "regular" isn't a visual cue, so plain argmax rarely picks it (22% on the
   queries), and no threshold makes its other calls reliable (at most ~1 in 3 right on the train
-  listings). Always answering "regular fit" scores 97% on the 461 labeled train listings and 84% on
-  the queries. The 0.99 threshold, chosen on the **train** listings, scores 96% there and 84% on the
+  listings). Always answering "regular fit" scores 97% on the 461 labeled train listings and 86% on
+  the queries. The 0.99 threshold, chosen on the **train** listings, scores 96% there and 86% on the
   queries (the same as always answering "regular fit"), while still allowing the rare confident
-  call. An earlier 0.9 threshold scored below that baseline (85% train, 75% queries).
+  call. An earlier 0.9 threshold scored below that baseline (85% on the train listings).
 - The dataset has no navy, olive, cream, or burgundy labels, so without families an edit to navy
   scored 0 even when all ten results were navy jackets labeled "Blue".
 
