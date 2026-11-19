@@ -71,7 +71,7 @@ class ExtractionScore:
 class RankingScore:
     edit_satisfaction: float | None  # share of labeled results that have the edited value
     type_match: float  # share of the k slots holding a listing of the query's garment type
-    precision: float | None  # automatic P@k: right type and has the edited value
+    precision: float | None  # automatic, label-based P@k: right type and has the edited value
 
 
 def load_eval_set(
