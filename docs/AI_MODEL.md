@@ -153,17 +153,17 @@ in the index, 8 team photos), searching the local index:
 | | Keyword only | Image only | **Image + edit (ours)** |
 |---|---|---|---|
 | Edit-satisfaction (results with the edited value) | 65% | 15% | **74%** |
-| Type match@10 (results of the right garment type) | 68% | 87% | **83%** |
+| Type match@10 (results of the right garment type) | 68% | 88% | **83%** |
 | Label-based P@10 (both, judged from dataset labels) | 43% | 13% | **60%** |
 
 Attribute accuracy: category 76%, color 63%, fabric 44%, fit 86% (always "regular fit" also scores
-86%); features precision 59%, recall 43%. Label-based P@10 is an automatic stand-in for the plan's
+86%); features precision 60%, recall 40%. Label-based P@10 is an automatic stand-in for the plan's
 team-judged P@10, which wasn't collected.
 
 ## Limitations
 
 - **Zero-shot only.** The model was not trained on our labels. **Fit can't be read**: the answer is
-  almost always the "regular fit" default. Fabric (44%) and features (precision 59%) are also weak:
+  almost always the "regular fit" default. Fabric (44%) and features (precision 60%) are also weak:
   polyester, nylon, and cotton look alike in photos, and `double-breasted`, `quilted`, `embroidery`,
   and `patches` are over-predicted.
 - **Category vocabulary overlaps.** Generic `jacket` / `coat` compete with specific categories.
