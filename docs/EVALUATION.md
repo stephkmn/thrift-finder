@@ -82,7 +82,7 @@ in the index) with one color edit, e.g. `puffer_02` blue → red.
 - 8 color edits; a result counts when the listing's dataset color label (mapped to our vocabulary,
   e.g. Grey → gray) includes the new color. λ = 0 still uses the edited caption in the text terms.
 - λ = 2 reached 85% with an earlier calibration but moved the results further from the upload's
-  look, so λ stays at the plan's 1.0 until S3-1 tuning.
+  look, so λ stays at the plan's 1.0 until S3-1 tuning (which kept it; see Tuning below).
 - **Latency:** one search takes ~60 ms once the model and index are loaded. Building the index takes
   ~50 s for 500 listings and runs once.
 - **Match score:** each similarity term is rescaled from 0 (typical unrelated listing) to 1 (closest
@@ -97,7 +97,7 @@ in the index) with one color edit, e.g. `puffer_02` blue → red.
 
 ## S1-11 evaluation set (hybrid)
 
-**Owner:** Member D · **Due:** Thu Nov 12, 2026 · **Status:** planned · **Decision:** [`DECISIONS.md`](DECISIONS.md)
+**Owner:** Member D · **Due:** Thu Nov 12, 2026 · **Status:** done (results below in S3-1 / S3-2 / S3-3) · **Decision:** [`DECISIONS.md`](DECISIONS.md)
 
 38 queries, each with one intended edit. It replaces the 16 Openverse photos above for tuning (S3-1)
 and for the progress report's results.
