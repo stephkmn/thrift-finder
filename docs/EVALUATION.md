@@ -197,13 +197,16 @@ https://doi.org/10.5281/zenodo.13788681. CC BY 4.0. Credit the dataset wherever 
 
 ## S3-1 / S3-2 / S3-3: results on the S1-11 set
 
-**Date:** Nov 18, 2026 · **Owner:** Member A · **Script:** `scripts/evaluate.py` (scoring in
-`backend/app/ml/evaluation.py`) · FashionCLIP, float64 on a laptop CPU
+**Date:** Nov 18, 2026, re-run Nov 20 · **Owner:** Member A · **Script:** `scripts/evaluate.py`
+(scoring in `backend/app/ml/evaluation.py`) · FashionCLIP on a laptop CPU (float32 and float64 give
+the same scores)
 
 These results replace the preliminary Openverse numbers above. All **38 queries** were run (30
-dataset photos and 8 own photos) on Member D's machine. At the time, 5 of the own photos were
-full-size originals kept out of the repository; on Nov 20 they were committed to `samples/` at
-512 px like the other 3, so a fresh clone now runs all 38.
+dataset photos and 8 own photos). On Nov 20, the 5 own photos that had been kept out of the
+repository as full-size originals were committed to `samples/` at 512 px like the other 3, and the
+numbers below were re-run from the repository's copies, so a fresh clone gets the same results.
+Compared with the full-size run, only the own photos' feature scores, image-only type match (87% →
+88%), and a few tuning-sweep cells moved by 1 to 13 points; the conclusions are unchanged.
 
 ### Attribute extraction
 
@@ -213,10 +216,11 @@ full-size originals kept out of the repository; on Nov 20 they were committed to
 | color | 60% | 75% | **63%** | 50% |
 | fabric | 50% | 25% | **44%** | 33% |
 | fit | 83% | 100% | 86% | 86% |
-| others precision / recall / F1 | 54% / 44% / 48% | 75% / 41% / 53% | **59% / 43% / 50%** | 44% / 37% / 40% |
+| others precision / recall / F1 | 54% / 44% / 48% | 88% / 32% / 47% | **60% / 40% / 48%** | 44% / 37% / 40% |
 
 - FashionCLIP beats base CLIP on category, color, fabric, and features. Base CLIP column:
-  `python scripts/zero_shot_accuracy.py eval/labels.csv`.
+  `python scripts/zero_shot_accuracy.py eval/labels.csv` (Nov 15 run, before the 5 own photos were
+  shrunk).
 - **Fit can't be read reliably zero-shot.** Always answering "regular fit" scores **86%** on these
   queries (32 of 37 fit labels) and **97%** on the 461 labeled train listings. Plain argmax scored
   22% on the queries: "regular" isn't a visual cue, so the model almost never picks it, and its other
@@ -240,7 +244,7 @@ For each query, the attributes are extracted from the photo, the query's intende
 | System | Edit-satisfaction | Type match@10 | Label-based P@10 |
 |---|---|---|---|
 | keyword | 65% | 68% | 43% |
-| image only | 15% | 87% | 13% |
+| image only | 15% | 88% | 13% |
 | **image + edit** | **74%** | **83%** | **60%** |
 
 All 38 queries; the edit metrics cover the 29 color/fabric/fit edits. By source:
@@ -248,8 +252,8 @@ All 38 queries; the edit metrics cover the 29 color/fabric/fit edits. By source:
 | System | Dataset (30): edit-sat. / type / P@10 | Own (8): edit-sat. / type / P@10 |
 |---|---|---|
 | keyword | 61% / 74% / 44% | 85% / 44% / 40% |
-| image only | 17% / 90% / 15% | 0% / 78% / 0% |
-| image + edit | 71% / 86% / 60% | 92% / 72% / 62% |
+| image only | 17% / 90% / 15% | 0% / 80% / 0% |
+| image + edit | 71% / 86% / 60% | 95% / 72% / 62% |
 
 - **Edit-satisfaction:** share of the top 10 whose dataset label has the edited value (results
   without that label are skipped). Our colors the dataset doesn't label count by family: navy →
@@ -282,7 +286,7 @@ settings. Selected rows (all 38 queries):
 | **1.0** | **(0.5, 0.3, 0.2)** (current) | **74%** | **83%** | **60%** |
 | 1.0 | (0.3, 0.4, 0.3) | 76% | 83% | 63% |
 | 1.5 | (0.3, 0.4, 0.3) (best, tied with λ = 0.5) | 77% | 83% | 64% |
-| 0.0 | (1.0, 0.0, 0.0) | 18% | 87% | 15% |
+| 0.0 | (1.0, 0.0, 0.0) | 17% | 87% | 15% |
 | 2.0 | (1.0, 0.0, 0.0) | 65% | 78% | 49% |
 
 - **Kept λ = 1 and weights (0.5, 0.3, 0.2).** The best setting is 4 points higher on label-based
@@ -291,7 +295,7 @@ settings. Selected rows (all 38 queries):
   Weights (0.3, 0.4, 0.3) are ahead at every λ, though (by 2 to 12 points), so they are the first
   thing to re-test on a larger query set. See `DECISIONS.md`.
 - Edit arithmetic helps most when the image term dominates: with image-only weights it lifts
-  edit-satisfaction from 18% (λ = 0) to 54% (λ = 1). Higher λ trades garment type for the edit
+  edit-satisfaction from 17% (λ = 0) to 53% (λ = 1). Higher λ trades garment type for the edit
   (type match 87% → 78% at λ = 2).
 
 ### Failure log
@@ -307,7 +311,7 @@ The lowest label-based P@10 for image + edit:
 | `ds-13` | fabric polyester → wool | 2 of 9 labeled results wool | Extraction already said "wool", so the edit changed nothing and the polyester look stayed |
 
 The own photos otherwise did well on color edits (`own-02` pink → black, `own-03` red → green,
-`own-08` tan → black: 9, 10, and 9 of 10 results in the new color).
+`own-08` tan → black: 10, 10, and 9 of 10 results in the new color).
 
 ### Reproduce
 
