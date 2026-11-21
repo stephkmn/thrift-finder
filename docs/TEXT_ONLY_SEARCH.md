@@ -31,7 +31,7 @@ In another terminal:
 ```bash
 cd frontend
 npm ci
-# Set VITE_USE_MOCKS=false in frontend/.env (frontend/.env.example defaults to true).
+cp .env.example .env   # VITE_USE_MOCKS=false calls the backend
 npm run dev
 ```
 

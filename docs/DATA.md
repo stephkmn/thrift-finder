@@ -126,11 +126,11 @@ The script writes:
 
 Both paths should stay **gitignored**. The script prints counts of rows scanned, outerwear found, invalid images, duplicates, and saved garments. Optionally use `--revision <HF_COMMIT_SHA>` to pin a specific source version and record that revision in this document.
 
-### Search-result contract and remaining integration
+### Search-result contract
 
 The `SearchResult` API schema supports `price: float | None`, `image_url: str`, `listing_url: str | None`, and `source: "ebay" | "local"`. This allows local archival items to have no verified sale price or purchase link.
 
-The local dataset contains no live purchase URLs or verified USD prices, so these fields must remain `null` when unavailable. Local image paths also need to be exposed through an appropriate backend image-serving route before they can be displayed in the frontend. **Do not fabricate eBay prices or purchase links.**
+The local dataset contains no live purchase URLs or verified USD prices, so these fields must remain `null` when unavailable. Local images are served by `GET /api/local-images/{id}` (`backend/app/api/search.py`, S3-4), which local results use as their `image_url`. **Do not fabricate eBay prices or purchase links.**
 ### Separate evaluation pool (`test` split)
 
 Run `python scripts/ingest.py --split test --limit 300` to import the **test split only**. This
@@ -202,7 +202,7 @@ The client supports:
 - Returning normalized listing information without persistent storage.
 - Controlled error handling for authentication, networking, and API response failures.
 
-The client is currently a standalone integration prototype. **It has not yet been connected to the application's `/api/search` endpoint or frontend.** This integration must be coordinated with the Backend Lead.
+Since S3-7 (PR #20), `/api/search` uses this client when `DATA_SOURCE=ebay`: `backend/app/ml/live_search.py` re-ranks up to 20 used listings in memory and falls back to the local index if eBay is rate-limited, unavailable, or returns nothing (`docs/SEARCH_FALLBACK.md`).
 
 The licensed local dataset of 500 indexed garments remains the reliable search fallback.
 
@@ -279,15 +279,15 @@ The current eBay client and preview script retrieve listings in memory without w
 
 Successful Production API requests demonstrate technical access at the time of testing but do not independently establish that all applicable eBay partnership or production-use requirements have been satisfied.
 
-The standalone client has not yet been integrated with FashionCLIP ranking or the application's search endpoint.
+Since S3-7 the client is connected to FashionCLIP ranking and `/api/search`; eBay results are still handled only in memory.
 
-### Next Steps
+### Next steps (status at the end of Phase 2)
 
-1. Coordinate with the Backend Lead before connecting the eBay client to `/api/search`.
-2. Preserve the 500-item local fallback dataset.
-3. Ensure live eBay results are handled in memory without persistent storage.
-4. Validate image, price, condition, and link fields during integration.
-5. Review applicable eBay production-use requirements before deployment.
+1. Done (S3-7): the eBay client is connected to `/api/search`.
+2. Ongoing: preserve the 500-item local fallback dataset.
+3. Done (S3-7): live eBay results are handled in memory without persistent storage.
+4. Done (S3-7): listings without an id, title, image, or link are dropped; thumbnails are only fetched from eBay's image CDN; prices in a currency other than USD are returned as `null`.
+5. Open: review applicable eBay production-use requirements before any deployment.
 6. Test API failures and verify local fallback behavior.
 
 See `docs/EBAY_FEASIBILITY.md` for additional verification details and reproduction commands.

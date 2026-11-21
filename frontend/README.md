@@ -129,13 +129,15 @@ cp .env.example .env
 
 | Variable             | Default in `.env.example` | Meaning                                                                              |
 | -------------------- | ------------------------- | ------------------------------------------------------------------------------------ |
-| `VITE_USE_MOCKS`     | `true`                    | `true` serves API calls from `src/api/mocks/`. Anything else calls the real backend. |
+| `VITE_USE_MOCKS`     | `false`                   | `true` serves API calls from `src/api/mocks/`. Anything else calls the real backend. |
 | `VITE_MOCK_DELAY_MS` | `600`                     | Fake network latency for mock responses, in milliseconds.                            |
 
 Never put secrets in frontend env files. Every `VITE_*` variable ends up in the public JavaScript bundle.
 `.env` is gitignored; only `.env.example` is committed.
 
 ## Run with mocks
+
+Set `VITE_USE_MOCKS=true` in `frontend/.env`, then:
 
 ```sh
 npm run dev
@@ -189,8 +191,9 @@ needs a swatch in `src/lib/colorSwatches.ts`; a test fails if one is missing.
    `DATA_SOURCE=ebay` (with `EBAY_CLIENT_ID` and `EBAY_CLIENT_SECRET`) searches live used eBay listings and
    falls back to the archive if eBay fails (`docs/SEARCH_FALLBACK.md`). Restart the backend after changing it.
 3. Start the FastAPI service on port 8000 (see the root `README.md`).
-4. Set `VITE_USE_MOCKS=false` in `frontend/.env` and run `npm run dev`. The Vite dev server proxies every
-   `/api/*` request to `http://localhost:8000`, so no CORS setup is needed during development.
+4. Keep `VITE_USE_MOCKS=false` in `frontend/.env` (the `.env.example` default) and run `npm run dev`. The
+   Vite dev server proxies every `/api/*` request to `http://localhost:8000`, so no CORS setup is needed
+   during development.
 
 ## Test, lint, format
 
