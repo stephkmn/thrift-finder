@@ -216,11 +216,12 @@ Compared with the full-size run, only the own photos' feature scores, image-only
 | color | 60% | 75% | **63%** | 50% |
 | fabric | 50% | 25% | **44%** | 33% |
 | fit | 83% | 100% | 86% | 86% |
-| others precision / recall / F1 | 54% / 44% / 48% | 88% / 32% / 47% | **60% / 40% / 48%** | 44% / 37% / 40% |
+| others precision / recall / F1 | 54% / 44% / 48% | 88% / 32% / 47% | **60% / 40% / 48%** | 46% / 40% / 43% |
 
 - FashionCLIP beats base CLIP on category, color, fabric, and features. Base CLIP column:
-  `python scripts/zero_shot_accuracy.py eval/labels.csv` (Nov 15 run, before the 5 own photos were
-  shrunk).
+  `python scripts/zero_shot_accuracy.py eval/labels.csv` (re-run Nov 20 with the 512 px own photos;
+  base CLIP's feature scores moved from 44% / 37% / 40%). Both models find 40% of the features, but
+  FashionCLIP's are more often right (60% vs. 46% precision).
 - **Fit can't be read reliably zero-shot.** Always answering "regular fit" scores **86%** on these
   queries (32 of 37 fit labels) and **97%** on the 461 labeled train listings. Plain argmax scored
   22% on the queries: "regular" isn't a visual cue, so the model almost never picks it, and its other
