@@ -1,0 +1,23 @@
+{
+  "note": "Recorded with scripts/evaluate.py on Nov 15, 2026 (patrickjohncyh/fashion-clip, float64 on a laptop CPU, local 500-listing index). Re-record with: python scripts/reproduce_sample.py --write",
+  "samples": [
+    {
+      "image": "samples/jacket1-flat.JPG",
+      "edit": {"attribute": "others", "from": "hood", "to": "none"},
+      "attributes": {"category": "windbreaker", "color": "pink", "fabric": "nylon", "fit": "regular fit", "others": ["hood", "zipper"]},
+      "top_titles": ["Pink Rain Jacket", "Purple Rain Jacket", "Pink Rain Jacket", "Pink Jacket", "Pink Jacket", "Pink Jacket", "Grey Jacket", "Pink Jacket", "Purple Rain Jacket", "Brown Jacket"]
+    },
+    {
+      "image": "samples/shacket1-hung.JPG",
+      "edit": {"attribute": "color", "from": "red", "to": "green"},
+      "attributes": {"category": "shacket", "color": "red", "fabric": "cotton", "fit": "regular fit", "others": ["belt"]},
+      "top_titles": ["Green Jacket", "Green Jacket", "Green Jacket", "Green Jacket", "Green Jacket", "Green Winter Jacket", "Green Blazer", "Green Jacket", "Green Blazer", "Green Jacket"]
+    },
+    {
+      "image": "samples/shacket2-flat.JPG",
+      "edit": {"attribute": "color", "from": "navy", "to": "brown"},
+      "attributes": {"category": "shacket", "color": "navy", "fabric": "wool", "fit": "regular fit", "others": ["buttons"]},
+      "top_titles": ["Brown Blazer", "Brown Blazer", "Brown Blazer", "Brown Jacket", "Brown Jacket", "Brown Blazer", "Brown Blazer", "Grey Blazer", "Multicolor Blazer", "Orange Jacket"]
+    }
+  ]
+}
