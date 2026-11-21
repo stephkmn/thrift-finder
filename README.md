@@ -28,7 +28,7 @@ uvicorn backend.app.main:app --reload  # http://localhost:8000
 
 # Frontend (in a second terminal)
 cd frontend
-cp .env.example .env              # VITE_USE_MOCKS=false calls the backend
+cp .env.example .env              
 npm install
 npm run dev                       # http://localhost:5173
 ```
