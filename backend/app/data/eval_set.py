@@ -276,7 +276,7 @@ def _row_index_of(path: Path, query_id: str) -> str | None:
 
 
 def _relative_to_pool(image: Path) -> str:
-    """queries.csv `file`: relative to data/eval/dataset/, like own photos to data/eval/own/."""
+    """queries.csv `file`: relative to data/eval/dataset/ (own photos: a file name in samples/)."""
     try:
         return image.relative_to(EVAL_POOL_DIR).as_posix()
     except ValueError:

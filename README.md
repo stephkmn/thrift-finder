@@ -79,7 +79,7 @@ With the Quickstart's `ml` extra and local index in place:
 python scripts/reproduce_sample.py
 ```
 
-This runs the three photos in `samples/` through the same code as the app: attribute extraction,
+This runs the three photos listed in `samples/expected_output.json` through the same code as the app: attribute extraction,
 the photo's scripted edit from `eval/queries.csv` (for example `shacket1-hung.JPG`: color red →
 green), and edit-aware search over the local index. It prints the extracted attributes and the top
 10 results, then compares them with `samples/expected_output.json`: the attributes must match
@@ -94,8 +94,8 @@ python scripts/ingest.py --split test --limit 300   # evaluation photos (test sp
 python scripts/evaluate.py --sweep --out results.md --details details.csv
 ```
 
-Five of the 38 evaluation photos are team photos kept out of the repository; without them the script
-skips those queries and runs 33.
+The ingest step downloads the 30 dataset photos; the 8 team photos are in `samples/`, so a fresh
+clone runs all 38 queries.
 
 ## Repository map
 
@@ -127,7 +127,7 @@ thrift-searcher/
 ├── scripts/                   # ingest, build_embeddings, build_eval_set, evaluate,
 │                              #   reproduce_sample, zero_shot_accuracy, keyword_baseline,
 │                              #   ebay_preview, poc_search
-├── samples/                   # 3 photos of Member D's own jackets + expected_output.json
+├── samples/                   # 8 photos of Member D's own jackets + expected_output.json
 ├── eval/                      # Evaluation queries and labels; see docs/EVALUATION.md
 ├── data/                      # gitignored: listings.jsonl, images/, embeddings.npz, eval/
 ├── pyproject.toml

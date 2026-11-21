@@ -1,10 +1,10 @@
 """Reproduce a sample result: run the committed sample photos through extract + search.
 
-Each photo in samples/ goes through the same code as the app: zero-shot attribute extraction
-(POST /api/extract), then the photo's scripted edit from eval/queries.csv (e.g. color red -> green)
-and edit-aware search over the local index (POST /api/search). The output is compared with
-samples/expected_output.json, recorded with scripts/evaluate.py (FashionCLIP, float64 on a
-laptop CPU).
+Each photo listed in samples/expected_output.json goes through the same code as the app:
+zero-shot attribute extraction (POST /api/extract), then the photo's scripted edit from
+eval/queries.csv (e.g. color red -> green) and edit-aware search over the local index
+(POST /api/search). The output is compared with samples/expected_output.json, recorded with
+scripts/evaluate.py (FashionCLIP, float64 on a laptop CPU).
 
 Pass criteria per photo: the extracted category, color, fabric, fit and features match exactly,
 and at least MIN_TITLE_OVERLAP of the 10 result titles match (as a multiset). The titles allow

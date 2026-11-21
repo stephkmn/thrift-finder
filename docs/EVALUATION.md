@@ -105,7 +105,7 @@ and for the progress report's results.
 | Source | Photos | How they are chosen | What is committed |
 |---|---|---|---|
 | Dataset `test` split | 30 | Seeded random draw, stratified by garment type | Labels only; images re-downloadable into `data/eval/dataset/` (gitignored) |
-| Member D's own jackets | 8 | 4 jackets × 2 shots (laid flat; worn or hung); at least 2 hooded | 3 photos in `samples/` (location data stripped, no faces); the rest stay in `data/eval/own/` (gitignored) |
+| Member D's own jackets | 8 | 4 jackets × 2 shots (laid flat; worn or hung); at least 2 hooded | All 8 in `samples/`, rotated upright, shrunk to 512 px, with metadata removed and no faces (3 on Nov 11, the other 5 on Nov 20) |
 
 ### Dataset queries
 
@@ -169,7 +169,7 @@ Member D assigns each photo's edit. The new value must be in `backend/app/ml/att
 
 | File | Contents |
 |---|---|
-| `eval/queries.csv` | `query_id` (`ds-01`…, `own-01`…), `source` (`dataset` / `own`), `split`, `row_index` (dataset), `file` (relative to `data/eval/dataset/`, e.g. `images/secondhand-000275.jpg`, or to `data/eval/own/`), `edit_attribute`, `edit_from`, `edit_to`, `seed` |
+| `eval/queries.csv` | `query_id` (`ds-01`…, `own-01`…), `source` (`dataset` / `own`), `split`, `row_index` (dataset), `file` (relative to `data/eval/dataset/`, e.g. `images/secondhand-000275.jpg`, or the file name in `samples/` for own photos), `edit_attribute`, `edit_from`, `edit_to`, `seed` |
 | `eval/labels.csv` | The format `scripts/zero_shot_accuracy.py` reads: `image`, `category`, `color`, `fabric`, `fit`, `others` |
 | `eval/dataset_source.csv` | The dataset's own fields for each dataset query (`type`, `colors`, `material`, `cut`, `pattern`), for reference while labeling |
 | `eval/excluded.csv` | Excluded rows: `query_id`, `row_index`, `reason` (written by hand; the script fills the slots) |
@@ -201,8 +201,9 @@ https://doi.org/10.5281/zenodo.13788681. CC BY 4.0. Credit the dataset wherever 
 `backend/app/ml/evaluation.py`) · FashionCLIP, float64 on a laptop CPU
 
 These results replace the preliminary Openverse numbers above. All **38 queries** were run (30
-dataset photos and 8 own photos), on Member D's machine, since the own photos live there
-(`data/eval/own/`, gitignored). On a machine without them the script skips those 5 and runs 33.
+dataset photos and 8 own photos) on Member D's machine. At the time, 5 of the own photos were
+full-size originals kept out of the repository; on Nov 20 they were committed to `samples/` at
+512 px like the other 3, so a fresh clone now runs all 38.
 
 ### Attribute extraction
 
