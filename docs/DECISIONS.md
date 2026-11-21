@@ -2,6 +2,36 @@
 
 Short record of team decisions (plan §9): date, decision, reason. Newest first.
 
+## 2026-11-18 — S3-1 tuning: keep λ and weights; fit defaults to "regular fit"
+
+**Decision.**
+
+- Keep the edit strength λ = 1 and re-ranker weights (0.5, 0.3, 0.2) from plan §4.3.
+- Fit reports a value other than "regular fit" only at ≥ 0.99 confidence (`default` and
+  `min_confidence` in `backend/app/ml/attributes.yaml`), and fit is listed as a limitation.
+- Evaluation scores our colors the dataset doesn't label by family (navy → Blue, olive → Green,
+  cream → White or Beige, burgundy → Red).
+- The results call the automatic metric "label-based P@10", not P@10: the plan's P@10 is
+  team-judged, and the team labels only the query photos.
+
+**Reasons.**
+
+- On all 38 S1-11 queries, the best swept setting (weights (0.3, 0.4, 0.3), λ = 1.5 or 0.5) beat the
+  current one by 4 points of label-based P@10 (64% vs. 60%). With 29 scored edits, one query moves
+  that by ~3.4 points, so the gap is about one query, and choosing the best of 20 settings on the same
+  queries would overstate it. Those weights lead at every λ (by 2 to 12 points), so they are the first
+  to re-test on a larger set.
+- Zero-shot can't read fit: "regular" isn't a visual cue, so plain argmax rarely picks it (22% on the
+  queries), and no threshold makes its other calls reliable (at most ~1 in 3 right on the train
+  listings). Always answering "regular fit" scores 97% on the 461 labeled train listings and 86% on
+  the queries. The 0.99 threshold, chosen on the **train** listings, scores 96% there and 86% on the
+  queries (the same as always answering "regular fit"), while still allowing the rare confident
+  call. An earlier 0.9 threshold scored below that baseline (85% on the train listings).
+- The dataset has no navy, olive, cream, or burgundy labels, so without families an edit to navy
+  scored 0 even when all ten results were navy jackets labeled "Blue".
+
+Details: [`EVALUATION.md` → S3-1 / S3-2 / S3-3](EVALUATION.md#s3-1--s3-2--s3-3-results-on-the-s1-11-set).
+
 ## 2026-11-10 — S1-11 evaluation set: dataset test split + Member D's own photos
 
 **Decision.** The S1-11 query set is a hybrid of 38 queries instead of 15–20 team-taken photos:

@@ -136,7 +136,7 @@ def report(rows: list[dict], sweep: dict, args: argparse.Namespace) -> str:
             f"{_pct(precision)} / {_pct(recall)} / {_pct(f1)} |\n"
         )
         scored = [r for r in group_rows if r["query"].edit_attribute in ev.SCOREABLE_EDITS]
-        header = "| System | Edit-satisfaction | Type match@10 | Auto P@10 |"
+        header = "| System | Edit-satisfaction | Type match@10 | Label-based P@10 |"
         divider = "|---|---|---|---|"
         if judged is not None:
             header, divider = header + " Team P@10 |", divider + "---|"
@@ -170,7 +170,7 @@ def report(rows: list[dict], sweep: dict, args: argparse.Namespace) -> str:
     if sweep:
         lines += [
             "### Tuning sweep (image + edit, all photos)\n",
-            "| λ | Weights (w1, w2, w3) | Edit-satisfaction | Type match@10 | Auto P@10 |",
+            "| λ | Weights (w1, w2, w3) | Edit-satisfaction | Type match@10 | Label-based P@10 |",
             "|---|---|---|---|---|",
         ]
         for (strength, weights), results in sweep.items():
@@ -197,7 +197,7 @@ def write_details(rows: list[dict], path: Path) -> None:
                 "system",
                 "edit_satisfaction",
                 "type_match",
-                "auto_p_at_10",
+                "label_p_at_10",
                 "top_titles",
             ]
         )
