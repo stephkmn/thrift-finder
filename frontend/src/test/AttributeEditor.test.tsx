@@ -81,18 +81,35 @@ describe('AttributeEditor', () => {
     expect(latest().color).toBe(VOCABULARY.color[1]);
   });
 
-  it('flags low-confidence fit only while it holds the model value', async () => {
-    const { user } = setup();
-    const fitLabel = () => screen.getByText('Fit').closest('label')!;
+  it('flags a low-confidence attribute only while it holds the model value', async () => {
+    const { user } = setup({
+      ...extracted,
+      confidences: { ...extracted.confidences, fabric: 0.52 },
+    });
+    const fabricLabel = () => screen.getByText('Fabric').closest('label')!;
     expect(screen.getAllByText('Double-check')).toHaveLength(1);
-    expect(fitLabel()).toHaveTextContent('Double-check');
+    expect(fabricLabel()).toHaveTextContent('Double-check');
 
-    await user.selectOptions(screen.getByRole('combobox', { name: /^fit/i }), 'oversized');
+    await user.selectOptions(screen.getByRole('combobox', { name: /^fabric/i }), 'leather');
     expect(screen.queryByText('Double-check')).not.toBeInTheDocument();
-    expect(screen.getByText('was regular fit')).toBeInTheDocument();
+    expect(screen.getByText('was denim')).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Reset fit' }));
-    expect(fitLabel()).toHaveTextContent('Double-check');
+    await user.click(screen.getByRole('button', { name: 'Reset fabric' }));
+    expect(fabricLabel()).toHaveTextContent('Double-check');
+  });
+
+  it("doesn't flag the default fit, whose confidence is low by design", () => {
+    // extracted has fit "regular fit" (the attributes.yaml default) at 0.55.
+    setup();
+    expect(screen.queryByText('Double-check')).not.toBeInTheDocument();
+  });
+
+  it('still flags a low-confidence fit that is not the default', () => {
+    setup({
+      ...extracted,
+      attributes: { ...extracted.attributes, fit: 'cropped' },
+    });
+    expect(screen.getByText('Fit').closest('label')).toHaveTextContent('Double-check');
   });
 
   it('removes the last feature as null, never []', async () => {

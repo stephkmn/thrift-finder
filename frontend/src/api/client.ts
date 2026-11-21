@@ -1,6 +1,12 @@
 import { ApiError } from './errors';
-import { mockExtract, mockSearch } from './mocks/mockApi';
-import type { ExtractResponse, SearchRequest, SearchResponse } from './types';
+import { mockExtract, mockGetItem, mockSearch } from './mocks/mockApi';
+import type {
+  Attributes,
+  ExtractResponse,
+  ItemDetails,
+  SearchRequest,
+  SearchResponse,
+} from './types';
 
 export { ApiError } from './errors';
 
@@ -21,12 +27,12 @@ function extractMessageForStatus(status: number): string {
   if (status === 415 || status === 422)
     return "The server couldn't read that photo. Try a JPG or PNG.";
   if (status === 429) return RATE_LIMITED;
-  return 'Something went wrong while analyzing your item. Please try again.';
+  return 'Your item could not be analyzed. Please try again.';
 }
 
 function searchMessageForStatus(status: number): string {
   if (status === 429) return RATE_LIMITED;
-  return 'Something went wrong while finding matches. Please try again.';
+  return 'Your matches could not be loaded. Please try again.';
 }
 
 /** fetch() that turns network failures and non-2xx responses into user-safe ApiErrors. */
@@ -85,5 +91,33 @@ export async function search(searchRequest: SearchRequest): Promise<SearchRespon
       body: JSON.stringify(searchRequest),
     },
     searchMessageForStatus,
+  );
+}
+
+function itemMessageForStatus(status: number): string {
+  if (status === 404) return 'This listing is no longer available.';
+  return 'This listing could not be loaded. Please try again.';
+}
+
+/**
+ * GET /api/item/{id} — an archive listing's details. Pass the attributes of the search that
+ * found it to get the "why it matched" comparison.
+ */
+export async function getItem(id: string, searched?: Attributes): Promise<ItemDetails> {
+  if (mocksEnabled()) {
+    return mockGetItem(id, searched);
+  }
+
+  const params = new URLSearchParams();
+  if (searched) {
+    for (const name of ['category', 'color', 'fabric', 'fit'] as const) {
+      params.set(name, searched[name]);
+    }
+  }
+  const query = params.toString();
+  return request<ItemDetails>(
+    `/api/item/${encodeURIComponent(id)}${query ? `?${query}` : ''}`,
+    { method: 'GET' },
+    itemMessageForStatus,
   );
 }

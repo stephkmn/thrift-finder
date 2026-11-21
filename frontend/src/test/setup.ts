@@ -6,6 +6,9 @@ import { afterEach, vi } from 'vitest';
 URL.createObjectURL = vi.fn(() => 'blob:test-preview');
 URL.revokeObjectURL = vi.fn();
 
+// jsdom doesn't implement scrolling; the board and details page only ask for it.
+window.scrollTo = vi.fn() as unknown as typeof window.scrollTo;
+
 afterEach(() => {
   cleanup();
   vi.unstubAllEnvs();

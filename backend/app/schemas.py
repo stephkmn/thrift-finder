@@ -93,3 +93,52 @@ class SearchResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     results: list[SearchResult] = Field(max_length=10)
+
+
+# GET /api/item/{id} (S3-6): details for an archive listing. eBay listings are never stored
+# (docs/EBAY_FEASIBILITY.md), so the details page builds those from the search result instead.
+class DatasetLabels(BaseModel):
+    """The listing's labels exactly as the dataset has them (any may be missing)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    type: str | None
+    category: str | None
+    colors: list[str]
+    material: str | None
+    cut: str | None
+    pattern: str | None
+    brand: str | None
+
+
+class AttributeComparison(BaseModel):
+    """One searched attribute next to the listing's label, mapped onto our vocabulary."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    attribute: Literal["category", "color", "fabric", "fit"]
+    yours: str
+    listing: str | None  # None when the dataset has no label for it
+    match: bool | None  # None when the label can't tell
+
+
+class ItemCredit(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    text: str
+    url: str
+
+
+class ItemDetails(BaseModel):
+    """Mirrors ItemDetails in frontend/src/api/types.ts. Archive items have no price or link."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: str
+    title: str
+    image_url: str
+    source: Literal["local"]
+    dataset_labels: DatasetLabels
+    # Empty unless the request passed the searched attributes as query parameters.
+    comparison: list[AttributeComparison]
+    credit: ItemCredit

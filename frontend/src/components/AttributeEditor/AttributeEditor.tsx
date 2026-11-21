@@ -8,7 +8,7 @@ import {
   sameFeatures,
 } from '../../lib/attributes';
 import { swatchBackground } from '../../lib/colorSwatches';
-import { VOCABULARY } from '../../lib/vocabulary';
+import { DEFAULTS, VOCABULARY } from '../../lib/vocabulary';
 import styles from './AttributeEditor.module.css';
 
 interface AttributeEditorProps {
@@ -288,7 +288,10 @@ export function AttributeEditor({ extracted, value, onChange, children }: Attrib
       name,
       attribute: name,
       was: changed ? original[name] : null,
-      needsCheck: !changed && confidences[name] < LOW_CONFIDENCE,
+      // The default ("regular fit") is what the model reports when nothing else is very likely,
+      // so its low confidence is expected and isn't a reason to double-check.
+      needsCheck:
+        !changed && confidences[name] < LOW_CONFIDENCE && original[name] !== DEFAULTS[name],
       onReset: () => reset(name),
     };
     const options = optionsFor(name, value[name], original[name]);

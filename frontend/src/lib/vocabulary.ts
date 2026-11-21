@@ -40,4 +40,25 @@ export function parseVocabulary(raw: unknown): Vocabulary {
   return { ...lists, features: featureNames };
 }
 
+/**
+ * Each attribute's optional `default` from attributes.yaml (only fit has one: "regular fit").
+ * The model reports the default unless another value is very likely, so the default's own
+ * confidence is low by design and says nothing about whether it's right.
+ */
+export function parseDefaults(raw: unknown): Partial<Record<ScalarAttributeName, string>> {
+  const vocabulary = parseVocabulary(raw);
+  const scalars = (raw as { scalars: Record<string, Record<string, unknown>> }).scalars;
+  const defaults: Partial<Record<ScalarAttributeName, string>> = {};
+  for (const name of SCALARS) {
+    const value = scalars[name].default;
+    if (value === undefined) continue;
+    if (typeof value !== 'string' || !vocabulary[name].includes(value)) {
+      fail(`scalars.${name}.default`);
+    }
+    defaults[name] = value;
+  }
+  return defaults;
+}
+
 export const VOCABULARY: Vocabulary = parseVocabulary(attributesYaml);
+export const DEFAULTS = parseDefaults(attributesYaml);

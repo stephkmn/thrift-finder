@@ -13,11 +13,11 @@ import logging
 from collections.abc import Callable
 from functools import lru_cache, partial
 from pathlib import Path
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 from urllib.parse import quote
 
 import numpy as np
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import FileResponse
 
@@ -25,11 +25,23 @@ from backend.app.cache import EmbeddingKind, QueryCache, get_query_cache
 from backend.app.config import get_settings
 from backend.app.data.ebay_client import EbayAPIError, EbayBrowseClient
 from backend.app.data.local_dataset import PROJECT_ROOT, load_listings
+from backend.app.data.preprocess import DATASET_ID, clean_text, parse_colors
 from backend.app.data.retrieval_fallback import FallbackReason, search_with_local_fallback
 from backend.app.ml.encoder import get_encoder
+from backend.app.ml.evaluation import edit_satisfied, type_matches
+from backend.app.ml.index import listing_labels
 from backend.app.ml.live_search import search_live_listings
 from backend.app.ml.rerank import Match, search_listings
-from backend.app.schemas import Attributes, SearchRequest, SearchResponse, SearchResult
+from backend.app.schemas import (
+    AttributeComparison,
+    Attributes,
+    DatasetLabels,
+    ItemCredit,
+    ItemDetails,
+    SearchRequest,
+    SearchResponse,
+    SearchResult,
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -151,13 +163,21 @@ async def search(
     return SearchResponse(results=[_to_result(m, outcome.source) for m in outcome.results])
 
 
-def _listing_image(listing_id: str) -> Path | None:
-    """Find an indexed local item's photo, never using client input as a file path."""
+def _find_listing(listing_id: str) -> dict[str, Any] | None:
+    """The indexed local record with this id, matched exactly (never used as a path)."""
     for item in load_listings(require_image=False):
         if item["id"] == listing_id:
-            path = (PROJECT_ROOT / item["image_path"]).resolve()
-            return path if path.is_relative_to(LOCAL_IMAGE_DIR) else None
+            return item
     return None
+
+
+def _listing_image(listing_id: str) -> Path | None:
+    """Find an indexed local item's photo, never using client input as a file path."""
+    item = _find_listing(listing_id)
+    if item is None:
+        return None
+    path = (PROJECT_ROOT / item["image_path"]).resolve()
+    return path if path.is_relative_to(LOCAL_IMAGE_DIR) else None
 
 
 @router.get("/api/local-images/{listing_id}")
@@ -174,3 +194,83 @@ async def local_image(listing_id: str) -> FileResponse:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Clothing image not found")
     media_type = "image/png" if path.suffix.lower() == ".png" else "image/jpeg"
     return FileResponse(path, media_type=media_type)
+
+
+# CC BY 4.0 requires crediting the dataset wherever its photos are shown (docs/DATA.md).
+DATASET_CREDIT = "Second-Hand Fashion dataset, Nauman (2024), CC BY 4.0. Photo resized."
+SearchedValue = Annotated[str | None, Query(max_length=50)]
+
+
+def _compare(
+    listing: dict[str, Any], searched: dict[str, str | None]
+) -> list[AttributeComparison]:
+    """Searched attributes next to the listing's labels, judged the way evaluation.py scores
+    search results, so the page and the reported metrics agree on what counts as a match."""
+    labels = listing_labels(listing)
+    shown = {
+        "category": labels.garment,
+        "color": ", ".join(labels.colors) or None,
+        "fabric": labels.fabric,
+        "fit": ", ".join(labels.fits) or None,
+    }
+    rows = []
+    for name, value in searched.items():
+        if not value:
+            continue
+        match = (
+            type_matches(listing, value)
+            if name == "category"
+            else edit_satisfied(listing, name, value)
+        )
+        rows.append(
+            AttributeComparison(attribute=name, yours=value, listing=shown[name], match=match)
+        )
+    return rows
+
+
+def _item_details(listing: dict[str, Any], searched: dict[str, str | None]) -> ItemDetails:
+    raw = listing.get("attributes") or {}
+    cut = ", ".join(parse_colors(raw.get("cut")))  # cut cells look like "['Regular']"
+    return ItemDetails(
+        id=str(listing["id"]),
+        title=str(listing["title"]),
+        image_url=f"/api/local-images/{quote(str(listing['id']), safe='')}",
+        source="local",
+        dataset_labels=DatasetLabels(
+            type=clean_text(raw.get("type")),
+            category=clean_text(raw.get("category")),
+            colors=[c for c in (clean_text(c) for c in raw.get("colors") or []) if c],
+            material=clean_text(raw.get("material")),
+            cut=cut or None,
+            pattern=clean_text(raw.get("pattern")),
+            brand=clean_text(raw.get("brand")),
+        ),
+        comparison=_compare(listing, searched),
+        credit=ItemCredit(
+            text=DATASET_CREDIT,
+            url=f"https://huggingface.co/datasets/{listing.get('dataset_id') or DATASET_ID}",
+        ),
+    )
+
+
+@router.get("/api/item/{listing_id}", response_model=ItemDetails)
+async def item_details(
+    listing_id: str,
+    category: SearchedValue = None,
+    color: SearchedValue = None,
+    fabric: SearchedValue = None,
+    fit: SearchedValue = None,
+) -> ItemDetails:
+    """Details for one archive listing (S3-6). Pass the searched attributes to get the
+    "why it matched" comparison. eBay ids are never stored, so they always return 404."""
+    try:
+        listing = await run_in_threadpool(_find_listing, listing_id)
+    except (OSError, ValueError) as exc:
+        logger.exception("Local clothing data unavailable")
+        raise HTTPException(
+            status.HTTP_503_SERVICE_UNAVAILABLE, "Listing details unavailable"
+        ) from exc
+    if listing is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Listing not found")
+    searched = {"category": category, "color": color, "fabric": fabric, "fit": fit}
+    return _item_details(listing, searched)

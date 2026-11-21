@@ -53,7 +53,7 @@ describe('ResultsGrid', () => {
     expect(item.getByText('Archive (not for sale)')).toBeInTheDocument();
     expect(item.getByText('40')).toBeInTheDocument();
     expect(item.queryByRole('link')).not.toBeInTheDocument();
-    expect(screen.getAllByRole('link')).toHaveLength(1);
+    expect(screen.getAllByRole('link', { name: /view listing/i })).toHaveLength(1);
   });
 
   it('opens the details page when a photo is clicked', async () => {
@@ -92,6 +92,22 @@ describe('ResultsGrid', () => {
     expect(screen.queryByText('See details')).not.toBeInTheDocument();
   });
 
+  it('credits the dataset under the board when archive photos are shown', () => {
+    render(<ResultsGrid state={{ status: 'success', results: [ebay, local] }} onRetry={vi.fn()} />);
+    const credit = screen.getByRole('link', { name: /Second-Hand Fashion dataset/ });
+    expect(credit).toHaveAttribute(
+      'href',
+      'https://huggingface.co/datasets/fnauman/fashion-second-hand-front-only-rgb',
+    );
+    expect(credit).toHaveAttribute('target', '_blank');
+    expect(credit).toHaveAttribute('rel', 'noopener noreferrer');
+  });
+
+  it('has no dataset credit when every result is from eBay', () => {
+    render(<ResultsGrid state={{ status: 'success', results: [ebay] }} onRetry={vi.fn()} />);
+    expect(screen.queryByText(/Second-Hand Fashion dataset/)).not.toBeInTheDocument();
+  });
+
   it('shows skeleton cards and announces progress while loading', () => {
     render(<ResultsGrid state={{ status: 'loading' }} onRetry={vi.fn()} />);
     expect(screen.getByTestId('results-skeleton')).toBeInTheDocument();
@@ -101,7 +117,7 @@ describe('ResultsGrid', () => {
 
   it('shows a friendly message when there are no results', () => {
     render(<ResultsGrid state={{ status: 'success', results: [] }} onRetry={vi.fn()} />);
-    expect(screen.getByText(/no matches for these details/i)).toBeInTheDocument();
+    expect(screen.getByText(/no matches were found for these details/i)).toBeInTheDocument();
     expect(screen.queryByRole('list')).not.toBeInTheDocument();
   });
 
